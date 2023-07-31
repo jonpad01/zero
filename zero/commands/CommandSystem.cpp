@@ -1,13 +1,10 @@
 #include "CommandSystem.h"
 
-#include <zero/ZeroBot.h>
-#include <zero/game/Game.h>
-#include <zero/game/net/PacketDispatcher.h>
 #include <zero/Common.h>
-
-#include <zero/commands/CoreCommands.h>
+#include <zero/ZeroBot.h>
 #include <zero/commands/CombatRoleCommands.h>
 #include <zero/commands/ConsumableCommands.h>
+#include <zero/commands/CoreCommands.h>
 #include <zero/commands/DevastationCommands.h>
 #include <zero/commands/HyperSpaceCommands.h>
 #include <zero/commands/LockCommand.h>
@@ -16,16 +13,17 @@
 #include <zero/commands/SetFreqCommand.h>
 #include <zero/commands/SetShipCommand.h>
 #include <zero/commands/StatusCommands.h>
-
+#include <zero/commands/SayCommand.h>
+#include <zero/game/Game.h>
+#include <zero/game/net/PacketDispatcher.h>
 
 namespace zero {
 
 constexpr int kArenaSecurityLevel = 5;
 
-class HelpCommand : public CommandExecutor {
-public:
-  void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
-    if (sender.empty()) return;
+const std::unordered_map<std::string, int> kOperators = {
+    {"tm_master", 10}, {"baked cake", 10}, {"x-demo", 10}, {"lyra.", 5}, {"profile", 5}, {"monkey", 10},
+    {"neostar", 5},    {"geekgrrl", 5},    {"sed", 5},     {"sk", 5},    {"b.o.x.", 10}};
 
 static void RawOnChatPacket(void* user, u8* pkt, size_t size) {
   CommandSystem* cmd = (CommandSystem*)user;
@@ -33,19 +31,15 @@ static void RawOnChatPacket(void* user, u8* pkt, size_t size) {
   cmd->OnChatPacket(pkt, size);
 }
 
-  CommandAccessFlags GetAccess() { return CommandAccess_Private; }
-  void SetAccess(CommandAccessFlags flags) { return; }
-  std::vector<std::string> GetAliases() { return { "help", "h" }; }
-  std::string GetDescription() { return "Helps"; }
-  int GetSecurityLevel() { return 0; }
-};
+CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(bot) {
+  dispatcher.Register(ProtocolS2C::Chat, RawOnChatPacket, this);
 
-class CommandsCommand : public CommandExecutor {
-public:
-  void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
-    if (sender.empty()) return;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
-    if (!player) return;
+  RegisterCommand(std::make_shared<HelpCommand>());
+  RegisterCommand(std::make_shared<CommandsCommand>());
+  RegisterCommand(std::make_shared<DelimiterCommand>());
+  RegisterCommand(std::make_shared<ModListCommand>());
+
+   RegisterCommand(std::make_shared<SayCommand>());
 
   RegisterCommand(std::make_shared<LockCommand>());
   RegisterCommand(std::make_shared<UnlockCommand>());
@@ -83,82 +77,33 @@ public:
   RegisterCommand(std::make_shared<AntiWarpCommand>());
   RegisterCommand(std::make_shared<AntiWarpOffCommand>());
 
-      if (std::find(executors.begin(), executors.end(), executor) == executors.end()) {
-        std::string output;
-
-        if (requester_level >= executor->GetSecurityLevel()) {
-          std::vector<std::string> aliases = executor->GetAliases();
-
-          // Combine all the aliases
-          for (std::size_t i = 0; i < aliases.size(); ++i) {
-            if (i != 0) {
-              output += "/";
-            }
-
-            output += "-- !" + aliases[i];
-          }
-
-          triggers.emplace_back(executor, output);
-        }
-
-        executors.push_back(executor);
-      }
+// these should be deva only commands
+// RegisterCommand(std::make_shared<AnchorCommand>());
+// RegisterCommand(std::make_shared<RushCommand>());
+#if 0
+    switch (zone) {
+    case Zone::Devastation: {
+      RegisterCommand(std::make_shared<BDPublicCommand>());
+      RegisterCommand(std::make_shared<BDPrivateCommand>());
+      RegisterCommand(std::make_shared<StartBDCommand>());
+      RegisterCommand(std::make_shared<StopBDCommand>());
+      RegisterCommand(std::make_shared<HoldBDCommand>());
+      RegisterCommand(std::make_shared<ResumeBDCommand>());
+      break;
     }
-
-    // Sort triggers alphabetically
-    std::sort(triggers.begin(), triggers.end(),
-      [](const Trigger& l, const Trigger& r) { return l.triggers.compare(r.triggers) < 0; });
-
-    // Display the stored triggers
-    for (Trigger& trigger : triggers) {
-      std::string desc = trigger.executor->GetDescription();
-      int security = trigger.executor->GetSecurityLevel();
-
-      std::string output = trigger.triggers + " - " + desc + " [" + std::to_string(security) + "]";
-
-      bot.game->chat.SendPrivateMessage(output.c_str(), player->id);
+    case Zone::Hyperspace: {
+      RegisterCommand(std::make_shared<HSFlagCommand>());
+      RegisterCommand(std::make_shared<HSFlagOffCommand>());
+      RegisterCommand(std::make_shared<HSBuyCommand>());
+      RegisterCommand(std::make_shared<HSSellCommand>());
+      RegisterCommand(std::make_shared<HSShipStatusCommand>());
+      break;
+    }
+    default: {
+      break;
     }
   }
-
-  CommandAccessFlags GetAccess() { return CommandAccess_Private; }
-  void SetAccess(CommandAccessFlags flags) { return; }
-  std::vector<std::string> GetAliases() { return { "commands", "c" }; }
-  std::string GetDescription() { return "Shows available commands"; }
-  int GetSecurityLevel() { return 0; }
-};
-
-std::string Lowercase(std::string_view str) {
-  std::string result;
-
-  std::string_view name = str;
-
-  //remove "^" that gets placed on names when biller is down
-  if (!name.empty() && name[0] == '^') {
-    name = name.substr(1);
-  }
-
-  result.resize(name.size());
-
-  std::transform(name.begin(), name.end(), result.begin(), ::tolower);
-
-  return result;
-}
-
-const std::unordered_map<std::string, int> kOperators = {
-    {"tm_master", 10}, {"baked cake", 10}, {"x-demo", 10}, {"lyra.", 5}, {"profile", 5}, {"monkey", 5},
-    {"neostar", 5},    {"geekgrrl", 5},    {"sed", 5},     {"sk", 5},    {"b.o.x.", 10}};
-
-static void RawOnChatPacket(void* user, u8* pkt, size_t size) {
-  CommandSystem* cmd = (CommandSystem*)user;
-
-  cmd->OnChatPacket(pkt, size);
-}
-
-CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(bot) {
-  dispatcher.Register(ProtocolS2C::Chat, RawOnChatPacket, this);
-
-  RegisterCommand(std::make_shared<HelpCommand>());
-  RegisterCommand(std::make_shared<CommandsCommand>());
+#endif
 }
 
 int CommandSystem::GetSecurityLevel(const std::string& player) {
