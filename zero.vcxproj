@@ -23,7 +23,9 @@
     <ClCompile Include="zero\behavior\BehaviorTree.cpp" />
     <ClCompile Include="zero\BotController.cpp" />
     <ClCompile Include="zero\commands\CommandSystem.cpp" />
+    <ClCompile Include="zero\Common.cpp" />
     <ClCompile Include="zero\game\Logger.cpp" />
+    <ClCompile Include="zero\Time.cpp" />
     <ClCompile Include="zero\ZeroBot.cpp" />
     <ClCompile Include="zero\game\BrickManager.cpp" />
     <ClCompile Include="zero\game\Buffer.cpp" />
@@ -54,6 +56,7 @@
     <ClCompile Include="zero\game\WorkQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="zero\Enums.h" />
     <ClInclude Include="zero\Actuator.h" />
     <ClInclude Include="zero\behavior\BehaviorBuilder.h" />
     <ClInclude Include="zero\behavior\BehaviorTree.h" />
@@ -71,9 +74,22 @@
     <ClInclude Include="zero\behavior\nodes\TimerNode.h" />
     <ClInclude Include="zero\behavior\nodes\WaypointNode.h" />
     <ClInclude Include="zero\BotController.h" />
+    <ClInclude Include="zero\commands\CombatRoleCommands.h" />
     <ClInclude Include="zero\commands\CommandSystem.h" />
+    <ClInclude Include="zero\commands\ConsumableCommands.h" />
+    <ClInclude Include="zero\commands\CoreCommands.h" />
+    <ClInclude Include="zero\commands\DevastationCommands.h" />
+    <ClInclude Include="zero\commands\HyperSpaceCommands.h" />
+    <ClInclude Include="zero\commands\LockCommand.h" />
+    <ClInclude Include="zero\commands\LockFreqCommand.h" />
+    <ClInclude Include="zero\commands\SetArenaCommand.h" />
+    <ClInclude Include="zero\commands\SetFreqCommand.h" />
+    <ClInclude Include="zero\commands\SetShipCommand.h" />
+    <ClInclude Include="zero\commands\StatusCommands.h" />
+    <ClInclude Include="zero\Common.h" />
     <ClInclude Include="zero\game\Logger.h" />
     <ClInclude Include="zero\path\Path.h" />
+    <ClInclude Include="zero\Time.h" />
     <ClInclude Include="zero\ZeroBot.h" />
     <ClInclude Include="zero\game\ArenaSettings.h" />
     <ClInclude Include="zero\game\BrickManager.h" />

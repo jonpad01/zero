@@ -40,9 +40,9 @@ ServerInfo kServers[] = {
     //{"SSCU Extreme Games", "208.118.63.35", 7900},
 };
 
-constexpr size_t kServerIndex = 0;
-const char* kLoginName = "ZeroBot";
-const char* kLoginPassword = "none";
+constexpr size_t kServerIndex = 2;
+const char* kLoginName = "poopins";
+const char* kLoginPassword = "nnnnnnnn";
 
 const char* kServerName = kServers[kServerIndex].name;
 
@@ -64,6 +64,8 @@ int main(void) {
 
   bot.JoinZone(zero::kServers[zero::kServerIndex]);
   bot.Run();
+
+
 
   return 0;
 }

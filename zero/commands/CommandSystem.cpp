@@ -3,115 +3,24 @@
 #include <zero/ZeroBot.h>
 #include <zero/game/Game.h>
 #include <zero/game/net/PacketDispatcher.h>
+#include <zero/Common.h>
+
+#include <zero/commands/CoreCommands.h>
+#include <zero/commands/CombatRoleCommands.h>
+#include <zero/commands/ConsumableCommands.h>
+#include <zero/commands/DevastationCommands.h>
+#include <zero/commands/HyperSpaceCommands.h>
+#include <zero/commands/LockCommand.h>
+#include <zero/commands/LockFreqCommand.h>
+#include <zero/commands/SetArenaCommand.h>
+#include <zero/commands/SetFreqCommand.h>
+#include <zero/commands/SetShipCommand.h>
+#include <zero/commands/StatusCommands.h>
+
 
 namespace zero {
 
 constexpr int kArenaSecurityLevel = 5;
-
-class HelpCommand : public CommandExecutor {
-public:
-  void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
-    if (sender.empty()) return;
-
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
-    if (!player) return;
-
-    bot.game->chat.SendPrivateMessage("-- !commands {.c} -- see command list (pm)", player->id);
-  }
-
-  CommandAccessFlags GetAccess() { return CommandAccess_Private; }
-  void SetAccess(CommandAccessFlags flags) { return; }
-  std::vector<std::string> GetAliases() { return { "help", "h" }; }
-  std::string GetDescription() { return "Helps"; }
-  int GetSecurityLevel() { return 0; }
-};
-
-class CommandsCommand : public CommandExecutor {
-public:
-  void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
-    if (sender.empty()) return;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
-    if (!player) return;
-
-    int requester_level = cmd.GetSecurityLevel(sender);
-    Commands& commands = cmd.GetCommands();
-    // Store a list of executors so multiple triggers linking to the same executor aren't displayed on different lines.
-    std::vector<CommandExecutor*> executors;
-
-    // Store the triggers so they can be sorted before output
-    struct Trigger {
-      CommandExecutor* executor;
-      std::string triggers;
-
-      Trigger(CommandExecutor* executor, const std::string& triggers) : executor(executor), triggers(triggers) {}
-    };
-
-    std::vector<Trigger> triggers;
-
-    // Loop through every registered command and store the combined triggers
-    for (auto& entry : commands) {
-      CommandExecutor* executor = entry.second.get();
-
-      if (std::find(executors.begin(), executors.end(), executor) == executors.end()) {
-        std::string output;
-
-        if (requester_level >= executor->GetSecurityLevel()) {
-          std::vector<std::string> aliases = executor->GetAliases();
-
-          // Combine all the aliases
-          for (std::size_t i = 0; i < aliases.size(); ++i) {
-            if (i != 0) {
-              output += "/";
-            }
-
-            output += "-- !" + aliases[i];
-          }
-
-          triggers.emplace_back(executor, output);
-        }
-
-        executors.push_back(executor);
-      }
-    }
-
-    // Sort triggers alphabetically
-    std::sort(triggers.begin(), triggers.end(),
-      [](const Trigger& l, const Trigger& r) { return l.triggers.compare(r.triggers) < 0; });
-
-    // Display the stored triggers
-    for (Trigger& trigger : triggers) {
-      std::string desc = trigger.executor->GetDescription();
-      int security = trigger.executor->GetSecurityLevel();
-
-      std::string output = trigger.triggers + " - " + desc + " [" + std::to_string(security) + "]";
-
-      bot.game->chat.SendPrivateMessage(output.c_str(), player->id);
-    }
-  }
-
-  CommandAccessFlags GetAccess() { return CommandAccess_Private; }
-  void SetAccess(CommandAccessFlags flags) { return; }
-  std::vector<std::string> GetAliases() { return { "commands", "c" }; }
-  std::string GetDescription() { return "Shows available commands"; }
-  int GetSecurityLevel() { return 0; }
-};
-
-std::string Lowercase(std::string_view str) {
-  std::string result;
-
-  std::string_view name = str;
-
-  //remove "^" that gets placed on names when biller is down
-  if (!name.empty() && name[0] == '^') {
-    name = name.substr(1);
-  }
-
-  result.resize(name.size());
-
-  std::transform(name.begin(), name.end(), result.begin(), ::tolower);
-
-  return result;
-}
 
 const std::unordered_map<std::string, int> kOperators = {
     {"tm_master", 10}, {"baked cake", 10}, {"x-demo", 10}, {"lyra.", 5}, {"profile", 5}, {"monkey", 5},
@@ -128,6 +37,72 @@ CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(b
 
   RegisterCommand(std::make_shared<HelpCommand>());
   RegisterCommand(std::make_shared<CommandsCommand>());
+  RegisterCommand(std::make_shared<DelimiterCommand>());
+  RegisterCommand(std::make_shared<ModListCommand>());
+
+  RegisterCommand(std::make_shared<LockCommand>());
+  RegisterCommand(std::make_shared<UnlockCommand>());
+
+  RegisterCommand(std::make_shared<SetShipCommand>());
+  RegisterCommand(std::make_shared<SetFreqCommand>());
+  RegisterCommand(std::make_shared<SetArenaCommand>());
+
+  RegisterCommand(std::make_shared<LockFreqCommand>());
+  RegisterCommand(std::make_shared<UnlockFreqCommand>());
+
+  RegisterCommand(std::make_shared<RepelCommand>());
+  RegisterCommand(std::make_shared<RepelOffCommand>());
+  RegisterCommand(std::make_shared<BurstCommand>());
+  RegisterCommand(std::make_shared<BurstOffCommand>());
+  RegisterCommand(std::make_shared<DecoyCommand>());
+  RegisterCommand(std::make_shared<DecoyOffCommand>());
+  RegisterCommand(std::make_shared<RocketCommand>());
+  RegisterCommand(std::make_shared<RocketOffCommand>());
+  RegisterCommand(std::make_shared<BrickCommand>());
+  RegisterCommand(std::make_shared<BrickOffCommand>());
+  RegisterCommand(std::make_shared<PortalCommand>());
+  RegisterCommand(std::make_shared<PortalOffCommand>());
+  RegisterCommand(std::make_shared<ThorCommand>());
+  RegisterCommand(std::make_shared<ThorOffCommand>());
+
+  RegisterCommand(std::make_shared<MultiCommand>());
+  RegisterCommand(std::make_shared<MultiOffCommand>());
+  RegisterCommand(std::make_shared<CloakCommand>());
+  RegisterCommand(std::make_shared<CloakOffCommand>());
+  RegisterCommand(std::make_shared<StealthCommand>());
+  RegisterCommand(std::make_shared<StealthOffCommand>());
+  RegisterCommand(std::make_shared<XRadarCommand>());
+  RegisterCommand(std::make_shared<XRadarOffCommand>());
+  RegisterCommand(std::make_shared<AntiWarpCommand>());
+  RegisterCommand(std::make_shared<AntiWarpOffCommand>());
+
+  // these should be deva only commands
+  //RegisterCommand(std::make_shared<AnchorCommand>());
+  //RegisterCommand(std::make_shared<RushCommand>());
+  #if 0
+    switch (zone) {
+    case Zone::Devastation: {
+      RegisterCommand(std::make_shared<BDPublicCommand>());
+      RegisterCommand(std::make_shared<BDPrivateCommand>());
+      RegisterCommand(std::make_shared<StartBDCommand>());
+      RegisterCommand(std::make_shared<StopBDCommand>());
+      RegisterCommand(std::make_shared<HoldBDCommand>());
+      RegisterCommand(std::make_shared<ResumeBDCommand>());
+      break;
+    }
+    case Zone::Hyperspace: {
+      RegisterCommand(std::make_shared<HSFlagCommand>());
+      RegisterCommand(std::make_shared<HSFlagOffCommand>());
+      RegisterCommand(std::make_shared<HSBuyCommand>());
+      RegisterCommand(std::make_shared<HSSellCommand>());
+      RegisterCommand(std::make_shared<HSShipStatusCommand>());
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+#endif
 }
 
 int CommandSystem::GetSecurityLevel(const std::string& player) {
@@ -211,28 +186,6 @@ void CommandSystem::OnChatPacket(const u8* pkt, size_t size) {
 
 const Operators& CommandSystem::GetOperators() const {
   return kOperators;
-}
-
-// Very simple tokenizer. Doesn't treat quoted strings as one token.
-std::vector<std::string_view> Tokenize(std::string_view message, char delim) {
-  std::vector<std::string_view> tokens;
-
-  std::size_t pos = 0;
-
-  while ((pos = message.find(delim)) != std::string::npos) {
-    // Skip over multiple delims in a row
-    if (pos > 0) {
-      tokens.push_back(message.substr(0, pos));
-    }
-
-    message = message.substr(pos + 1);
-  }
-
-  if (!message.empty()) {
-    tokens.push_back(message);
-  }
-
-  return tokens;
 }
 
 }  // namespace zero

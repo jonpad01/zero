@@ -5,6 +5,7 @@
 #include <zero/game/Game.h>
 #include <zero/game/InputState.h>
 #include <zero/game/Memory.h>
+#include <zero/Time.h>
 
 #include <memory>
 
@@ -27,6 +28,7 @@ struct ZeroBot {
   WorkQueue* work_queue;
   Worker* worker;
   Game* game = nullptr;
+  Time time;
 
   InputState input;
   BotController* bot_controller = nullptr;
