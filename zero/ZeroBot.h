@@ -15,10 +15,36 @@ struct BotController;
 struct Worker;
 struct WorkQueue;
 
+enum class Zone {
+  Local,
+  Subgame,
+  Hyperspace,
+  Devastation,
+  MetalGear,
+  ExtremeGames,
+
+  Unknown,
+  Count
+};
+
+inline const char* to_string(Zone zone) {
+  const char* kZoneNames[] = {"Local", "Subgame", "Hyperspace", "Devastation", "MetalGear", "ExtremeGames", "Unknown"};
+
+  static_assert(ZERO_ARRAY_SIZE(kZoneNames) == (size_t)Zone::Count);
+
+  if ((size_t)zone >= ZERO_ARRAY_SIZE(kZoneNames)) {
+    return kZoneNames[(size_t)Zone::Unknown];
+  }
+
+  return kZoneNames[(size_t)zone];
+}
+
 struct ServerInfo {
   const char* name;
   const char* ipaddr;
   u16 port;
+
+  Zone zone = Zone::Unknown;
 };
 
 struct ZeroBot {
@@ -29,6 +55,8 @@ struct ZeroBot {
   Worker* worker;
   Game* game = nullptr;
   Time time;
+
+  ServerInfo server_info = {};
 
   InputState input;
   BotController* bot_controller = nullptr;
