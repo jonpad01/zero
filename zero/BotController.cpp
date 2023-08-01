@@ -219,9 +219,10 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
 
 BotController::BotController() {
   typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
+  typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)();
 
   // clang-format off
-  ShipBuilder builders[] = {
+  ShipBuilder shipBuilders[] = {
     BuildHyperspaceWarbirdCenter,
     BuildHyperspaceWarbirdCenter,
     BuildHyperspaceWarbirdCenter,
@@ -259,7 +260,7 @@ BotController::BotController() {
         .End();
   this->behavior_tree = builder.Build();
 #else
-  this->behavior_tree = builders[kShip]();
+  this->behavior_tree = shipBuilders[kShip]();
 #endif
   // clang-format on
 

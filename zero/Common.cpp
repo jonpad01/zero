@@ -94,4 +94,23 @@ bool IsDigit(const std::string& str) {
   return result;
 }
 
+bool IsWhitespace(char c) {
+  if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v') {
+    return true;
+  }
+  return false;
+}
+
+std::string RemoveWhitespace(const std::string& str) {
+  std::string result;
+
+  for (std::size_t i = 0; i < str.size(); i++) {
+    if (!IsWhitespace(str[i])) {
+      result.push_back(str[i]);
+    }
+  }
+
+  return result;
+}
+
 }  // namespace zero
