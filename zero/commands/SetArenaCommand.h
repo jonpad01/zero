@@ -20,13 +20,15 @@ class SetArenaCommand : public CommandExecutor {
     if (arg.empty()) {
       msg = sender + " has sent me to pub.";
       chat.SendMessage(ChatType::Public, msg.c_str());
-      chat.SendMessage(ChatType::Public, "?go");
+      //chat.SendMessage(ChatType::Public, "?go");
       return;
     } else {
       msg = sender + " has sent me to ?go " + arg;
       chat.SendMessage(ChatType::Public, msg.c_str());
+      // TODO: cant get arena request with chat message
       msg = "?go " + arg;
-      chat.SendMessage(ChatType::Public, msg.c_str());
+     //chat.SendMessage(ChatType::Public, msg.c_str());
+      //bot.game->connection.
     }
   }
 

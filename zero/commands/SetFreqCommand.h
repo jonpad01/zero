@@ -24,8 +24,7 @@ class SetFreqCommand : public CommandExecutor {
     uint16_t freq = atoi(arg.c_str());
 
     if (freq >= 0 && freq < 100) {
-      std::string msg = "=" + arg;
-      chat.SendMessage(ChatType::Public, msg.c_str());
+      bot.game->connection.SendFrequencyChange(freq);
       chat.SendPrivateMessage("If you don't see me change freq, either the balancer stopped me, or I jumped back automatically.", player->id);
     } else {
       SendUsage(chat, player->id);

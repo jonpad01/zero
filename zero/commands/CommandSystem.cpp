@@ -39,7 +39,7 @@ CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(b
   RegisterCommand(std::make_shared<DelimiterCommand>());
   RegisterCommand(std::make_shared<ModListCommand>());
 
-   RegisterCommand(std::make_shared<SayCommand>());
+  RegisterCommand(std::make_shared<SayCommand>());
 
   RegisterCommand(std::make_shared<LockCommand>());
   RegisterCommand(std::make_shared<UnlockCommand>());
@@ -77,11 +77,7 @@ CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(b
   RegisterCommand(std::make_shared<AntiWarpCommand>());
   RegisterCommand(std::make_shared<AntiWarpOffCommand>());
 
-// these should be deva only commands
-// RegisterCommand(std::make_shared<AnchorCommand>());
-// RegisterCommand(std::make_shared<RushCommand>());
-#if 0
-    switch (zone) {
+  switch (bot.server_info.zone) {
     case Zone::Devastation: {
       RegisterCommand(std::make_shared<BDPublicCommand>());
       RegisterCommand(std::make_shared<BDPrivateCommand>());
@@ -89,6 +85,8 @@ CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(b
       RegisterCommand(std::make_shared<StopBDCommand>());
       RegisterCommand(std::make_shared<HoldBDCommand>());
       RegisterCommand(std::make_shared<ResumeBDCommand>());
+      RegisterCommand(std::make_shared<AnchorCommand>());
+      RegisterCommand(std::make_shared<RushCommand>());
       break;
     }
     case Zone::Hyperspace: {
@@ -103,7 +101,6 @@ CommandSystem::CommandSystem(ZeroBot& bot, PacketDispatcher& dispatcher) : bot(b
       break;
     }
   }
-#endif
 }
 
 int CommandSystem::GetSecurityLevel(const std::string& player) {
