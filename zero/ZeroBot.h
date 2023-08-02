@@ -6,6 +6,7 @@
 #include <zero/game/InputState.h>
 #include <zero/game/Memory.h>
 #include <zero/Time.h>
+#include <zero/Enums.h>
 
 #include <memory>
 
@@ -14,18 +15,6 @@ namespace zero {
 struct BotController;
 struct Worker;
 struct WorkQueue;
-
-enum class Zone {
-  Local,
-  Subgame,
-  Hyperspace,
-  Devastation,
-  MetalGear,
-  ExtremeGames,
-
-  Unknown,
-  Count
-};
 
 inline const char* to_string(Zone zone) {
   const char* kZoneNames[] = {"Local", "Subgame", "Hyperspace", "Devastation", "MetalGear", "ExtremeGames", "Unknown"};

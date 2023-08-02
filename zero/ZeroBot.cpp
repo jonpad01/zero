@@ -73,7 +73,7 @@ bool ZeroBot::JoinZone(ServerInfo& server) {
   kPlayerPassword = password;
 
   game = memory_arena_construct_type(&perm_arena, Game, perm_arena, trans_arena, *work_queue, 1920, 1080);
-  bot_controller = memory_arena_construct_type(&perm_arena, BotController);
+  bot_controller = memory_arena_construct_type(&perm_arena, BotController, *game, server.zone);
 
   commands = memory_arena_construct_type(&perm_arena, CommandSystem, *this, this->game->dispatcher);
 

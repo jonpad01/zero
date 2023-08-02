@@ -54,6 +54,7 @@
     <ClCompile Include="zero\game\Soccer.cpp" />
     <ClCompile Include="zero\game\WeaponManager.cpp" />
     <ClCompile Include="zero\game\WorkQueue.cpp" />
+    <ClCompile Include="zero\zones\hyperspace\Hyperspace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zero\commands\SayCommand.h" />
@@ -132,6 +133,7 @@
     <ClInclude Include="zero\Types.h" />
     <ClInclude Include="zero\game\WeaponManager.h" />
     <ClInclude Include="zero\game\WorkQueue.h" />
+    <ClInclude Include="zero\zones\hyperspace\Hyperspace.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

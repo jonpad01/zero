@@ -16,9 +16,9 @@ class SetArenaCommand : public CommandExecutor {
     auto& chat = bot.game->chat;
     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
     std::string msg;
-    std::string c_arg = RemoveWhitespace(arg);
+    std::string trimmedArg = RemoveWhitespace(arg);
 
-    if (c_arg.empty()) {
+    if (trimmedArg.empty()) {
       msg = sender + " has sent me to pub.";
       chat.SendMessage(ChatType::Public, msg.c_str());
       // 0xFFFF is what the game probably sends when a player types ?go
@@ -26,23 +26,23 @@ class SetArenaCommand : public CommandExecutor {
       // and push players into pub 1
       // this is left up to the zone to handle
       bot.game->connection.SendArenaLogin(player->ship, 0, 1920, 1080, 0xFFFF, "");
-    } else if (IsDigit(c_arg)) {
-      int num = std::atoi(c_arg.c_str());
+    } else if (IsDigit(trimmedArg)) {
+      int num = std::atoi(trimmedArg.c_str());
       // send bot to a pub arena (pub 0, pub 1, pub 2, etc)
-      // for arenas like eg and tw, this just sends you to pub, they don't really allow it
+      // for zones like eg and tw, this just sends you to pub, they don't really allow it
       // for ASSS zones, numbers over 2 byte signed int max get ignored and won't send you anywhere
       if (num >= 0 && num <= 32767) {
-        msg = sender + " has sent me to ?go " + c_arg;
+        msg = sender + " has sent me to ?go " + trimmedArg;
         chat.SendMessage(ChatType::Public, msg.c_str());
         bot.game->connection.SendArenaLogin(player->ship, 0, 1920, 1080, num, "");
       } else {
         chat.SendPrivateMessage("That arena is not allowed.", player->id);
       }
     } else {
-      msg = sender + " has sent me to ?go " + c_arg;
+      msg = sender + " has sent me to ?go " + trimmedArg;
       chat.SendMessage(ChatType::Public, msg.c_str());
       // 0xFFFD is the flag that allows joining arenas by name, which is entered in the last argument
-      bot.game->connection.SendArenaLogin(player->ship, 0, 1920, 1080, 0xFFFD, c_arg.c_str());
+      bot.game->connection.SendArenaLogin(player->ship, 0, 1920, 1080, 0xFFFD, trimmedArg.c_str());
     }
   }
 
