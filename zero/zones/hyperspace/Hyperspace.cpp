@@ -22,6 +22,14 @@ namespace zero {
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
   using namespace behavior;
   BehaviorBuilder builder;
+  builder
+    .Selector()
+      .Sequence()  // Enter the specified ship if not already in it.
+        .InvertChild<ShipQueryNode>("request_ship")
+        .Child<ShipRequestNode>("request_ship")
+      .End()
+    .End();
+
   return builder.Build();
 }
 

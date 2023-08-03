@@ -21,20 +21,17 @@ class SetShipCommand : public CommandExecutor {
       return;
     }
 
-    uint16_t ship = atoi(arg.c_str());
+    int ship = atoi(arg.c_str());
 
-    if (ship >= 1 && ship <= 9) {
-      bot.game->connection.SendShipRequest(ship - 1);
+    // bot.game->connection.SendShipRequest(ship - 1);
+    bb.Set<int>("request_ship", ship - 1);
 
-      if (ship == 9) {
-        bb.Clear();
+    if (ship == 9) {
+      bb.Clear();
 
-        chat.SendPrivateMessage("My behaviors are also reset when sent to spec", player->id);
-      } else {
-        chat.SendPrivateMessage("Ship selection recieved.", player->id);
-      }
+      chat.SendPrivateMessage("My behaviors are also reset when sent to spec", player->id);
     } else {
-      SendUsage(chat, player->id);
+      chat.SendPrivateMessage("Ship selection recieved.", player->id);
     }
   }
 

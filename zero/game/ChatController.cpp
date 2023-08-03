@@ -28,29 +28,50 @@ ChatController::ChatController(PacketDispatcher& dispatcher, Connection& connect
 }
 
 void ChatController::SendMessage(ChatType type, const char* mesg) {
-  u8 data[kMaxPacketSize];
-  NetworkBuffer buffer(data, kMaxPacketSize);
-  size_t size = strlen(mesg) + 1;
+  OutBoundEntry entry;
 
-  buffer.WriteU8(0x06);
-  buffer.WriteU8((u8)type);
-  buffer.WriteU8(0x00);  // Sound
-  buffer.WriteU16(0x00);
-  buffer.WriteString(mesg, size);
+  strcpy(entry.message, mesg);
+  entry.sender = 0;
+  entry.sound = 0x00;
+  entry.type = type;
 
-  connection.packet_sequencer.SendReliableMessage(connection, buffer.data, buffer.GetSize());
+  outbound_msgs.emplace_back(entry);
 }
 
 void ChatController::SendPrivateMessage(const char* mesg, u16 pid) {
+  OutBoundEntry entry;
+
+  strcpy(entry.message, mesg);
+  entry.sender = pid;
+  entry.sound = 0x00;
+  entry.type = ChatType::Private;
+
+  outbound_msgs.emplace_back(entry);
+}
+
+void ChatController::SendQueuedMessage() {
+
+  if (outbound_msgs.empty() || time.GetTime() < outbound_timestamp + 1000) {
+    return;
+  }
+
+  outbound_timestamp = time.GetTime();
+
+  OutBoundEntry msg = outbound_msgs[0];
+  outbound_msgs.pop_front();
+
+  uint16_t pid = 0;
+  if (msg.type == ChatType::Private) pid = msg.sender;
+
   u8 data[kMaxPacketSize];
   NetworkBuffer buffer(data, kMaxPacketSize);
-  size_t size = strlen(mesg) + 1;
+  size_t size = strlen(msg.message) + 1;
 
   buffer.WriteU8(0x06);
-  buffer.WriteU8((u8)ChatType::Private);
+  buffer.WriteU8((u8)msg.type);
   buffer.WriteU8(0x00);  // Sound
   buffer.WriteU16(pid);
-  buffer.WriteString(mesg, size);
+  buffer.WriteString(msg.message, size);
 
   connection.packet_sequencer.SendReliableMessage(connection, buffer.data, buffer.GetSize());
 }
@@ -98,7 +119,9 @@ inline int GetShipStatusPercent(u32 upgrade, u32 maximum, u32 current) {
   return (current_upgrades * 100) / maximum_upgrades;
 }
 
-void ChatController::Update(float dt) {}
+void ChatController::Update(float dt) {
+  SendQueuedMessage();
+}
 
 char GetChatTypePrefix(ChatType type) {
   static const char kPrefixes[] = {'A', ' ', ' ', 'T', 'O', 'P', 'W', 'R', 'E', 'C'};

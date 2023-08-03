@@ -1,8 +1,10 @@
 #ifndef ZERO_CHATCONTROLLER_H_
 #define ZERO_CHATCONTROLLER_H_
 
+#include <deque>
 #include <zero/Types.h>
 #include <zero/game/InputState.h>
+#include <zero/Time.h>
 
 namespace zero {
 
@@ -65,10 +67,23 @@ struct ChatController {
 
   void SendMessage(ChatType type, const char* mesg);
   void SendPrivateMessage(const char* mesg, u16 pid);
+  void SendQueuedMessage();
 
   void OnChatPacket(u8* packet, size_t size);
 
   Player* GetBestPlayerNameMatch(char* name, size_t length);
+
+  private:
+  struct OutBoundEntry {
+    ChatType type;
+    u8 sound;
+    uint16_t sender;
+    char message[520];
+  };
+
+  Time time;
+  std::deque<OutBoundEntry> outbound_msgs;
+  uint64_t outbound_timestamp = 0;
 };
 
 }  // namespace zero
