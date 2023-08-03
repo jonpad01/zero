@@ -223,7 +223,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
   return builder.Build();
 }
 
-std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceShipBuilder(Game& game) {
+std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(Game& game) {
   typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
 
   uint8_t ship = game.player_manager.GetSelf()->ship;

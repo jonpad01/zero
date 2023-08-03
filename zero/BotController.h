@@ -32,10 +32,13 @@ struct BotController {
   BotController(Game& game, Zone zone);
 
   void Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx);
-  std::unique_ptr<behavior::BehaviorNode> GetBehaviorTree(Game& game);
+  void SetZoneBuilder();
 
  private:
-  std::unique_ptr<behavior::BehaviorNode> behavior_tree;
+  typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(Game& game);
+
+  ZoneBuilder zoneBuilder = nullptr;
+  std::unique_ptr<behavior::BehaviorNode> behavior_tree = nullptr;
 };
 
 }  // namespace zero

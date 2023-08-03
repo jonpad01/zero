@@ -25,13 +25,14 @@ namespace zero {
 
 BotController::BotController(Game& game, Zone zone) {
   
-  uint8_t ship = game.player_manager.GetSelf()->ship;
   this->zone = zone;
 
-  this->behavior_tree = GetBehaviorTree(game);
-  this->input = nullptr;
+  SetZoneBuilder();
+  if (zoneBuilder) behavior_tree = zoneBuilder(game);
+  input = nullptr;
 }
 
+// TODO: find method to update zone
 void BotController::Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx) {
   this->input = &input;
 
@@ -88,10 +89,9 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
     };
 
     execute_ctx.blackboard.Set("levi_aim_points", levi_aim_points);
-
-    behavior_tree = GetBehaviorTree(game);
   }
 
+  if (zoneBuilder) behavior_tree = zoneBuilder(game);
   steering.Reset();
 
   if (behavior_tree) {
@@ -101,18 +101,17 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
   actuator.Update(game, input, steering.force, steering.rotation);
 }
 
-std::unique_ptr<behavior::BehaviorNode> BotController::GetBehaviorTree(Game& game) {
-       
-    std::unique_ptr<behavior::BehaviorNode> result = nullptr;
-
+void BotController::SetZoneBuilder() {
+  
   switch (zone) {
     case Zone::Hyperspace: {
-       result = GetHyperSpaceShipBuilder(game);
+      zoneBuilder = GetHyperSpaceBehaviorTree;
        break;
     }
+    default: {
+       zoneBuilder = nullptr;
+    }
   }
-
-  return result;
 }
 
 }  // namespace zero
