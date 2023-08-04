@@ -74,6 +74,7 @@ struct ChatController {
   Player* GetBestPlayerNameMatch(char* name, size_t length);
 
   private:
+
   struct OutBoundEntry {
     ChatType type;
     u8 sound;

@@ -1,6 +1,7 @@
 #define NOMINMAX
 
 #include <stdio.h>
+#include <iostream>
 #include <zero/ZeroBot.h>
 #include <zero/game/Buffer.h>
 #include <zero/game/Clock.h>
@@ -43,8 +44,8 @@ ServerInfo kServers[] = {
 };
 
 constexpr size_t kServerIndex = 2;
-const char* kLoginName = "poopins";
-const char* kLoginPassword = "nnnnnnnn";
+const char* kLoginName = "";
+const char* kLoginPassword = "";
 
 const char* kServerName = kServers[kServerIndex].name;
 
@@ -52,22 +53,27 @@ static_assert(kServerIndex < ZERO_ARRAY_SIZE(kServers), "Bad server index");
 
 }  // namespace zero
 
-int main(void) {
+int main(int argc, char* argv[]) {
+
+  if (argc < 3) {
+    std::cout << "Enter Username and Password as arguments.";
+    return 0;
+  }
+
 #ifdef _WIN32
   SetConsoleCtrlHandler(ConsoleCloserHandler, TRUE);
 #endif
-
+ 
   zero::ZeroBot bot;
   g_Bot = &bot;
 
-  if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
+  if (!bot.Initialize(argv[1], argv[2])) {
+ // if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
     return 1;
   }
 
   bot.JoinZone(zero::kServers[zero::kServerIndex]);
   bot.Run();
-
-
 
   return 0;
 }

@@ -36,11 +36,15 @@ BotController::BotController(Game& game, Zone zone) {
 void BotController::Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx) {
   this->input = &input;
 
+  if (this->radius == 0.0f) {
+    execute_ctx.blackboard.Set<int>("request_ship", 0);
+  }
+
   uint8_t ship = game.player_manager.GetSelf()->ship;
   float radius = game.connection.settings.ShipSettings[ship].GetRadius();
 
-  // TOOD: Rebuild on ship change and use ship radius.
-  if (this->radius != radius) {
+  // float comparisons are ok here because they are always the same values
+  if (this->radius != radius || this->radius == 0.0f) {
       this->radius = radius;
     
     auto processor = std::make_unique<path::NodeProcessor>(game);
