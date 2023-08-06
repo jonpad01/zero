@@ -56,6 +56,7 @@ struct ChatController {
 
   size_t entry_index = 0;
   ChatEntry entries[64] = {};
+  
 
   PrivateHistory history;
 
@@ -67,13 +68,16 @@ struct ChatController {
 
   void SendMessage(ChatType type, const char* mesg);
   void SendPrivateMessage(const char* mesg, u16 pid);
-  void SendQueuedMessage();
+  
+  const std::deque<ChatEntry>& GetRecentChat();
 
   void OnChatPacket(u8* packet, size_t size);
 
   Player* GetBestPlayerNameMatch(char* name, size_t length);
 
   private:
+
+   void SendQueuedMessage();
 
   struct OutBoundEntry {
     ChatType type;
@@ -85,6 +89,9 @@ struct ChatController {
   Time time;
   std::deque<OutBoundEntry> outbound_msgs;
   uint64_t outbound_timestamp = 0;
+
+  std::deque<ChatEntry> recent_chat;
+  std::size_t entries_read = 0;
 };
 
 }  // namespace zero

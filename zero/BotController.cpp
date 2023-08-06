@@ -36,8 +36,9 @@ BotController::BotController(Game& game, Zone zone) {
 void BotController::Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx) {
   this->input = &input;
 
+  // initial run
   if (this->radius == 0.0f) {
-    execute_ctx.blackboard.Set<int>("request_ship", 0);
+    execute_ctx.blackboard.Set<int>("request_ship", (rand() % 8));
   }
 
   uint8_t ship = game.player_manager.GetSelf()->ship;
@@ -95,6 +96,8 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
     execute_ctx.blackboard.Set("levi_aim_points", levi_aim_points);
   }
 
+  SendMessages(game);
+
   if (zoneBuilder) behavior_tree = zoneBuilder(game);
   steering.Reset();
 
@@ -114,6 +117,23 @@ void BotController::SetZoneBuilder() {
     }
     default: {
        zoneBuilder = nullptr;
+    }
+  }
+}
+
+void BotController::SendMessages(Game& game) {
+
+  if (time.GetTime() < message_sender_timestamp + 10000) return;
+  message_sender_timestamp = time.GetTime();
+
+  switch (zone) {
+    case Zone::Hyperspace: {
+       bool flagging = game.player_manager.GetSelf()->frequency == 90 || game.player_manager.GetSelf()->frequency == 91;
+       game.chat.SendMessage(ChatType::Public, "?ships");
+       if (flagging) game.chat.SendMessage(ChatType::Public, "?lancs");
+       break;
+    }
+    default: {
     }
   }
 }

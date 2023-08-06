@@ -28,17 +28,24 @@ struct BotController {
   path::Path current_path;
   float radius = 0.0f;
   Zone zone;
+  Time time;
 
   BotController(Game& game, Zone zone);
 
   void Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx);
   void SetZoneBuilder();
 
+  void SendMessages(Game& game);
+  void SetTeams(Game& game, behavior::ExecuteContext& execute_ctx);
+  void SortPlayers(Game& game, behavior::ExecuteContext& execute_ctx);
+
  private:
   typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(Game& game);
 
   ZoneBuilder zoneBuilder = nullptr;
   std::unique_ptr<behavior::BehaviorNode> behavior_tree = nullptr;
+
+  uint64_t message_sender_timestamp = 0;
 };
 
 }  // namespace zero

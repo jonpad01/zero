@@ -16,6 +16,7 @@
 #include <zero/behavior/nodes/TargetNode.h>
 #include <zero/behavior/nodes/TimerNode.h>
 #include <zero/behavior/nodes/WaypointNode.h>
+#include <zero/behavior/nodes/hyperspace/BuyShipsNode.h>
 
 namespace zero {
 
@@ -24,6 +25,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
   BehaviorBuilder builder;
   builder
     .Selector()
+      .Child<BuyShipsNode>()
       .Sequence()  // Enter the specified ship if not already in it.
         .InvertChild<ShipQueryNode>("request_ship")
         .Child<ShipRequestNode>("request_ship")

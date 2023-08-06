@@ -57,8 +57,10 @@ int main(int argc, char* argv[]) {
 
   if (argc < 3) {
     std::cout << "Enter Username and Password as arguments.";
-    return 0;
+    return 1;
   }
+
+  srand((unsigned)time(0));
 
 #ifdef _WIN32
   SetConsoleCtrlHandler(ConsoleCloserHandler, TRUE);

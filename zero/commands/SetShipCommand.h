@@ -16,15 +16,12 @@ class SetShipCommand : public CommandExecutor {
     auto& chat = bot.game->chat;
     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    if (arg.empty() || arg < "1" || arg > "9") {
+    if (arg.empty() || arg < "1" || arg < "9" || arg.size() > 1) {
       SendUsage(chat, player->id);
       return;
     }
 
-    int ship = atoi(arg.c_str());
-
-    // bot.game->connection.SendShipRequest(ship - 1);
-    bb.Set<int>("request_ship", ship - 1);
+    int ship = atoi(arg.c_str()); 
 
     if (ship == 9) {
       bb.Clear();
@@ -33,6 +30,9 @@ class SetShipCommand : public CommandExecutor {
     } else {
       chat.SendPrivateMessage("Ship selection recieved.", player->id);
     }
+
+    // bot.game->connection.SendShipRequest(ship - 1);
+    bb.Set<int>("request_ship", ship - 1);
   }
 
   void SendUsage(ChatController& chat, uint16_t sender) {

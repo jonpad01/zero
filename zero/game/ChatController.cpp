@@ -121,6 +121,15 @@ inline int GetShipStatusPercent(u32 upgrade, u32 maximum, u32 current) {
 
 void ChatController::Update(float dt) {
   SendQueuedMessage();
+
+  // using a count instead of clear, because new messages can
+  // be push into the list before this update runs
+  if (entries_read > 0) {
+    for (std::size_t i = 0; i < entries_read; i++) {
+      recent_chat.pop_back();
+    }
+    entries_read = 0;
+  }
 }
 
 char GetChatTypePrefix(ChatType type) {
@@ -145,9 +154,15 @@ void ChatController::OnChatPacket(u8* packet, size_t size) {
 
   ChatEntry* entry = PushEntry((char*)packet + 5, size - 5, type);
 
+  ChatEntry otherEntry;
+  strcpy(otherEntry.message, (char*)packet + 5);
+  otherEntry.type = type;
+  otherEntry.sound = sound;
+
   Player* player = player_manager.GetPlayerById(sender_id);
   if (player) {
     memcpy(entry->sender, player->name, 20);
+    strcpy(otherEntry.sender, player->name);
 
     char prefix = GetChatTypePrefix(type);
 
@@ -182,6 +197,9 @@ void ChatController::OnChatPacket(u8* packet, size_t size) {
   }
 
   entry->sound = sound;
+
+  recent_chat.push_front(otherEntry);
+  if (recent_chat.size() > 20) recent_chat.pop_back();
 }
 
 ChatEntry* ChatController::PushEntry(const char* mesg, size_t size, ChatType type) {
@@ -279,6 +297,12 @@ char* PrivateHistory::GetPrevious(char* current) {
   }
 
   return recent ? recent->name : nullptr;
+}
+
+// return a reference to recent, then set the number of entries that was read
+const std::deque<ChatEntry>& ChatController::GetRecentChat() {
+  entries_read = recent_chat.size();
+  return recent_chat;
 }
 
 }  // namespace zero
