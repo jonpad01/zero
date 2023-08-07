@@ -88,7 +88,7 @@ struct ShipRequestNode : public BehaviorNode {
 
       // set flag to buy the ship
       if (found != std::string::npos) {
-        bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Buy);
+        bb.Set<ItemTransaction>("item_transaction", ItemTransaction::BuyShip);
         bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({GetShipName(requested_ship)}));
         return ExecuteResult::Failure;
       }

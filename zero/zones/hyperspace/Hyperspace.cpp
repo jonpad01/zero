@@ -24,7 +24,47 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
   using namespace behavior;
   BehaviorBuilder builder;
 
-  builder.Sequence().Child<BuySellNode>().End();
+  // clang-format off
+  builder
+    .Selector() // buy, sell, list, or listen
+        .Sequence() // buy a ship
+            .Child<BuyShipQuery>() // success = move to selector
+                .Selector() // spectating or safe
+                    .Child<ShipQueryNode>(8) // success = move to buy
+                    .Selector()        
+                        .Child<SafeTileQueryNode>() // success = on safe tile
+                        .Child<WarpNode>() // warp to center
+                    .End()
+                .End()
+            .Child<BuyNode>()
+        .End()
+        .Sequence() // sell a ship
+            .Child<SellShipQuery>()
+            .Child<SellNode>()
+        .End()
+        .Sequence() 
+            .Child<BuyItemQuery>()
+                .Sequence()
+                    .InvertChild<ShipQueryNode>("transaction_ship")
+                     .Child<ShipRequestNode>("transaction_ship")
+                .End()
+            .Child<BuyNode>()
+        .End()
+        .Sequence()
+            .Child<SellItemQuery>()
+            .Child<SellNode>()
+         .End()
+
+         .Sequence()
+            .Child<ListItemsQuery>()
+            //.Child<ListItemsNode>()
+         .End()
+         .Sequence()
+            .Child<ListenQuery>()
+            //.Child<ListenNode>()
+         .End()
+     .End();
+  // clang-format on
 
   return builder.Build();
 }
@@ -32,13 +72,16 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
   using namespace behavior;
   BehaviorBuilder builder;
+
+  // clang-format off
   builder
     .Selector()
       .Sequence()  // Enter the specified ship if not already in it.
         .InvertChild<ShipQueryNode>("request_ship")
         .Child<ShipRequestNode>("request_ship")
-      .End()
+        .End()
     .End();
+  // clang-format on
 
   return builder.Build();
 }
