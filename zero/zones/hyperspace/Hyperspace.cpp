@@ -16,16 +16,24 @@
 #include <zero/behavior/nodes/TargetNode.h>
 #include <zero/behavior/nodes/TimerNode.h>
 #include <zero/behavior/nodes/WaypointNode.h>
-#include <zero/behavior/nodes/hyperspace/BuyShipsNode.h>
+#include <zero/behavior/nodes/hyperspace/BuySellNode.h>
 
 namespace zero {
+
+std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
+  using namespace behavior;
+  BehaviorBuilder builder;
+
+  builder.Sequence().Child<BuySellNode>().End();
+
+  return builder.Build();
+}
 
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
   using namespace behavior;
   BehaviorBuilder builder;
   builder
     .Selector()
-      .Child<BuyShipsNode>()
       .Sequence()  // Enter the specified ship if not already in it.
         .InvertChild<ShipQueryNode>("request_ship")
         .Child<ShipRequestNode>("request_ship")
@@ -233,10 +241,18 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
   return builder.Build();
 }
 
-std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(Game& game) {
+std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::ExecuteContext& ctx) {
   typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
 
-  uint8_t ship = game.player_manager.GetSelf()->ship;
+  auto& bb = ctx.blackboard;
+
+  ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None); 
+
+  if (transaction != ItemTransaction::None) {
+    return BuildHyperspaceBuySell();
+  }
+
+  uint8_t ship = ctx.bot->game->player_manager.GetSelf()->ship;
 
   // clang-format off
   ShipBuilder shipBuilders[] = {

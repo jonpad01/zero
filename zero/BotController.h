@@ -30,17 +30,17 @@ struct BotController {
   Zone zone;
   Time time;
 
-  BotController(Game& game, Zone zone);
+  BotController(Game& game, behavior::ExecuteContext& ctx, Zone zone);
 
-  void Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx);
+  void Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& ctx);
   void SetZoneBuilder();
 
   void SendMessages(Game& game);
-  void SetTeams(Game& game, behavior::ExecuteContext& execute_ctx);
-  void SortPlayers(Game& game, behavior::ExecuteContext& execute_ctx);
+  void SetTeams(behavior::ExecuteContext& ctx);
+  void SortPlayers(behavior::ExecuteContext& ctx);
 
  private:
-  typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(Game& game);
+  typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(behavior::ExecuteContext& ctx);
 
   ZoneBuilder zoneBuilder = nullptr;
   std::unique_ptr<behavior::BehaviorNode> behavior_tree = nullptr;

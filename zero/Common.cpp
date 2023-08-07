@@ -113,4 +113,40 @@ std::string RemoveWhitespace(const std::string& str) {
   return result;
 }
 
+std::string GetShipName(int ship) {
+  switch (ship) {
+    case 0: {
+      return "Warbird";
+    }
+    case 1: {
+      return "Javelin";
+    }
+    case 2: {
+      return "Spider";
+    }
+    case 3: {
+      return "Leviathan";
+    }
+    case 4: {
+      return "Terrier";
+    }
+    case 5: {
+      return "Weasel";
+    }
+    case 6: {
+      return "Lancaster";
+    }
+    case 7: {
+      return "Shark";
+    }
+    case 8: {
+      return "Spectator";
+    }
+    default: {
+      return "";
+    }
+  }
+  return "";
+}
+
 }  // namespace zero

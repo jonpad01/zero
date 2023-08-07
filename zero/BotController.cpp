@@ -22,23 +22,22 @@ namespace zero {
 //constexpr int kShip = 0;
 
 
-
-BotController::BotController(Game& game, Zone zone) {
+// ctx.bot can't be called here because it hasnt been assigned yet
+BotController::BotController(Game& game, behavior::ExecuteContext& ctx, Zone zone) {
   
   this->zone = zone;
-
-  SetZoneBuilder();
-  if (zoneBuilder) behavior_tree = zoneBuilder(game);
   input = nullptr;
 }
 
 // TODO: find method to update zone
-void BotController::Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& execute_ctx) {
+void BotController::Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& ctx) {
   this->input = &input;
 
   // initial run
   if (this->radius == 0.0f) {
-    execute_ctx.blackboard.Set<int>("request_ship", (rand() % 8));
+    ctx.blackboard.Set<int>("request_ship", (rand() % 8));
+    SetZoneBuilder();
+    if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
   }
 
   uint8_t ship = game.player_manager.GetSelf()->ship;
@@ -57,7 +56,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
     pathfinder->CreateMapWeights(game.GetMap(), radius);
 
     //execute_ctx.blackboard.Set("request_ship", kShip);
-    execute_ctx.blackboard.Set("leash_distance", 15.0f);
+    ctx.blackboard.Set("leash_distance", 15.0f);
 
     std::vector<Vector2f> waypoints{
         Vector2f(440, 460),
@@ -66,7 +65,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
         Vector2f(415, 590),
     };
 
-    execute_ctx.blackboard.Set("waypoints", waypoints);
+    ctx.blackboard.Set("waypoints", waypoints);
 
     std::vector<Vector2f> center_warpers{
         Vector2f(500, 500),
@@ -75,7 +74,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
         Vector2f(500, 523),
     };
 
-    execute_ctx.blackboard.Set("center_warpers", center_warpers);
+    ctx.blackboard.Set("center_warpers", center_warpers);
 
     std::vector<Vector2f> levi_camp_points{
         Vector2f(630, 475),
@@ -84,7 +83,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
         Vector2f(410, 450),
     };
 
-    execute_ctx.blackboard.Set("levi_camp_points", levi_camp_points);
+    ctx.blackboard.Set("levi_camp_points", levi_camp_points);
 
     std::vector<Vector2f> levi_aim_points{
         Vector2f(512, 480),  // North
@@ -93,16 +92,17 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
         Vector2f(480, 511),  // West
     };
 
-    execute_ctx.blackboard.Set("levi_aim_points", levi_aim_points);
+    ctx.blackboard.Set("levi_aim_points", levi_aim_points);
   }
 
   SendMessages(game);
-
-  if (zoneBuilder) behavior_tree = zoneBuilder(game);
+  
+  // call the zone builder every update so it can switch trees
+  if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
   steering.Reset();
 
   if (behavior_tree) {
-    behavior_tree->Execute(execute_ctx);
+    behavior_tree->Execute(ctx);
   }
 
   actuator.Update(game, input, steering.force, steering.rotation);
@@ -129,7 +129,7 @@ void BotController::SendMessages(Game& game) {
   switch (zone) {
     case Zone::Hyperspace: {
        bool flagging = game.player_manager.GetSelf()->frequency == 90 || game.player_manager.GetSelf()->frequency == 91;
-       game.chat.SendMessage(ChatType::Public, "?ships");
+      // game.chat.SendMessage(ChatType::Public, "?ships");
        if (flagging) game.chat.SendMessage(ChatType::Public, "?lancs");
        break;
     }

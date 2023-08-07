@@ -16,7 +16,7 @@ class SetShipCommand : public CommandExecutor {
     auto& chat = bot.game->chat;
     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    if (arg.empty() || arg < "1" || arg < "9" || arg.size() > 1) {
+    if (arg.empty() || arg < "1" || arg > "9" || arg.size() > 1) {
       SendUsage(chat, player->id);
       return;
     }

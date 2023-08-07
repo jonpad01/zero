@@ -4,6 +4,7 @@
 #include <zero/behavior/BehaviorTree.h>
 #include <zero/game/Game.h>
 #include <zero/game/Logger.h>
+#include <zero/Common.h>
 
 namespace zero {
 namespace behavior {
@@ -55,10 +56,13 @@ struct ShipRequestNode : public BehaviorNode {
   ShipRequestNode(const char* ship_key) : ship_key(ship_key) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
+    auto& bot = ctx.bot;
+    auto& bb = ctx.blackboard;
+    auto& game = ctx.bot->game;
+    auto self = ctx.bot->game->player_manager.GetSelf();
+
     constexpr s32 kRequestInterval = 300;
     constexpr const char* kLastRequestKey = "last_ship_request_tick";
-
-    auto self = ctx.bot->game->player_manager.GetSelf();
 
     if (!self) return ExecuteResult::Failure;
 
@@ -72,6 +76,23 @@ struct ShipRequestNode : public BehaviorNode {
     }
 
     if (self->ship == requested_ship) return ExecuteResult::Success;
+
+    dont_own_msg = "You do not own a " + GetShipName(requested_ship) + " hull on shipset ";
+
+    // look for message saying the ship isnt owned
+    for (const ChatEntry& entry : game->chat.GetRecentChat()) {
+      if (entry.type != ChatType::Arena) continue;
+      std::string_view msg(entry.message);
+
+      std::size_t found = msg.find(dont_own_msg);
+
+      // set flag to buy the ship
+      if (found != std::string::npos) {
+        bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Buy);
+        bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({GetShipName(requested_ship)}));
+        return ExecuteResult::Failure;
+      }
+    }
 
     s32 last_request_tick = ctx.blackboard.ValueOr<s32>(kLastRequestKey, 0);
     s32 current_tick = GetCurrentTick();
@@ -98,6 +119,7 @@ struct ShipRequestNode : public BehaviorNode {
 
   int ship = 0;
   const char* ship_key = nullptr;
+  std::string dont_own_msg;
 };
 
 }  // namespace behavior

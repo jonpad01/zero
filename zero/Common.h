@@ -15,5 +15,6 @@ std::vector<std::string> SplitString(const std::string& string, const std::strin
 bool IsDigit(const std::string& str);
 bool IsWhitespace(char c);
 std::string RemoveWhitespace(const std::string& str);
+std::string GetShipName(int ship);
 }
 #endif
