@@ -27,13 +27,13 @@ class HSShipStatusCommand : public CommandExecutor {
       }
     }
 
-    bb.Set<ItemTransaction>("ItemTransaction", ItemTransaction::ListItems);
-    bb.Set<Ship>("ItemTransactionShip", ship);
-    bb.Set<bool>("ItemTransactionMessageSent", false);
+    bb.Set<ItemTransaction>("item_transaction", ItemTransaction::ListItems);
+    bb.Set<Ship>("transaction_ship", ship);
+    //bb.Set<bool>("transaction_message_sent", false);
     // TODO: move timing into the behavior node after it sends a buy message
-    bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
-    bb.Set<uint16_t>("ItemTransactionSenderID", player->id);
-    bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
+    //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
+    bb.Set<uint16_t>("transaction_sender_id", player->id);
+    //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
   }
 
   void SendUsage(ChatController& chat, uint16_t sender) {
@@ -58,13 +58,13 @@ class HSBuyCommand : public CommandExecutor {
     std::vector<std::string> args = SplitString(arg, "|");
     // adding to the item list in case buy was used in a delimiter
 
-    Ship ship = bot.game->ship_controller.ship;
+    int ship = bot.game->player_manager.GetSelf()->ship;
     std::vector<std::string> list;
 
     if (!args.empty() && isdigit(args[0][0])) {
       int num = args[0][0] - '0';
       if (num >= 1 && num <= 8) {
-        ship = Ship(num - 1);
+        ship = num - 1;
         args.erase(args.begin());
       } else {
         SendUsage(chat, player->id);
@@ -75,15 +75,14 @@ class HSBuyCommand : public CommandExecutor {
       list.emplace_back(item);
      }
 
-     bb.Set<std::vector<std::string>>("ItemTransactionList", list);
-     bb.Set<std::size_t>("ItemTransactionCount", list.size());
-     bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
-     bb.Set<uint16_t>("ItemTransactionSenderID", player->id);
-     bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
-     bb.Set<ItemTransaction>("ItemTransaction", ItemTransaction::Buy);
-     bb.Set<bool>("ItemTransactionMessageSent", false);
-     bb.Set<bool>("ItemTransactionSetShipSent", false);
-     bb.Set<Ship>("ItemTransactionShip", ship);
+     bb.Set<std::vector<std::string>>("buy_list", list);
+     //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
+     bb.Set<uint16_t>("transaction_sender_id", player->id);
+     //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
+     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Buy);
+     //bb.Set<bool>("ItemTransactionMessageSent", false);
+     //bb.Set<bool>("ItemTransactionSetShipSent", false);
+     bb.Set<int>("transaction_ship", ship);
 
   }
 
@@ -108,13 +107,13 @@ class HSSellCommand : public CommandExecutor {
 
      std::vector<std::string> args = SplitString(arg, "|");
     
-     Ship ship = bot.game->ship_controller.ship;
+     int ship = bot.game->player_manager.GetSelf()->ship;
      std::vector<std::string> list;
 
      if (!args.empty() && isdigit(args[0][0])) {
       int num = args[0][0] - '0';
       if (num >= 1 && num <= 8) {
-        ship = Ship(num - 1);
+        ship = num - 1;
         args.erase(args.begin());
       } else {
         SendUsage(chat, player->id);
@@ -125,15 +124,14 @@ class HSSellCommand : public CommandExecutor {
       list.emplace_back(item);
      }
   
-     bb.Set<std::vector<std::string>>("ItemTransactionList", list);
-     bb.Set<std::size_t>("ItemTransactionCount", list.size());
-     bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
-     bb.Set<uint16_t>("ItemTransactionSenderID", player->id);
-     bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
-     bb.Set<ItemTransaction>("ItemTransaction", ItemTransaction::Sell);
-     bb.Set<bool>("ItemTransactionMessageSent", false);
-     bb.Set<bool>("ItemTransactionSetShipSent", false);
-     bb.Set<Ship>("ItemTransactionShip", ship);
+     bb.Set<std::vector<std::string>>("sell_list", list);
+     //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
+     bb.Set<uint16_t>("transaction_sender_id", player->id);
+     //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
+     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Sell);
+    // bb.Set<bool>("ItemTransactionMessageSent", false);
+    // bb.Set<bool>("ItemTransactionSetShipSent", false);
+     bb.Set<int>("transaction_ship", ship);
 
   }
 

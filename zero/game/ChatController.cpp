@@ -49,6 +49,28 @@ void ChatController::SendPrivateMessage(const char* mesg, u16 pid) {
   outbound_msgs.emplace_back(entry);
 }
 
+void ChatController::SendMessage(ChatType type, const std::string& mesg) {
+  OutBoundEntry entry;
+
+  strcpy(entry.message, mesg.c_str());
+  entry.sender = 0;
+  entry.sound = 0x00;
+  entry.type = type;
+
+  outbound_msgs.emplace_back(entry);
+}
+
+void ChatController::SendPrivateMessage(const std::string& mesg, u16 pid) {
+  OutBoundEntry entry;
+
+  strcpy(entry.message, mesg.c_str());
+  entry.sender = pid;
+  entry.sound = 0x00;
+  entry.type = ChatType::Private;
+
+  outbound_msgs.emplace_back(entry);
+}
+
 void ChatController::SendQueuedMessage() {
 
   if (outbound_msgs.empty() || time.GetTime() < outbound_timestamp + 1000) {

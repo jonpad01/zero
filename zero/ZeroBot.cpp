@@ -71,9 +71,10 @@ bool ZeroBot::JoinZone(ServerInfo& server) {
 
   kPlayerName = name;
   kPlayerPassword = password;
+  this->server_info = server;
 
   game = memory_arena_construct_type(&perm_arena, Game, perm_arena, trans_arena, *work_queue, 1920, 1080);
-  bot_controller = memory_arena_construct_type(&perm_arena, BotController, *game, execute_ctx, server.zone);
+  bot_controller = memory_arena_construct_type(&perm_arena, BotController, server.zone);
 
   commands = memory_arena_construct_type(&perm_arena, CommandSystem, *this, this->game->dispatcher);
 
@@ -91,7 +92,7 @@ bool ZeroBot::JoinZone(ServerInfo& server) {
 
   game->connection.SendEncryptionRequest(g_Settings.encrypt_method);
 
-  this->server_info = server;
+  
   return true;
 }
 

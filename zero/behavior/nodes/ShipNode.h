@@ -90,6 +90,7 @@ struct ShipRequestNode : public BehaviorNode {
       if (found != std::string::npos) {
         bb.Set<ItemTransaction>("item_transaction", ItemTransaction::BuyShip);
         bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({GetShipName(requested_ship)}));
+        bb.Set<uint16_t>("transaction_sender_id", self->id);
         return ExecuteResult::Failure;
       }
     }

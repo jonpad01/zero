@@ -68,6 +68,8 @@ struct ChatController {
 
   void SendMessage(ChatType type, const char* mesg);
   void SendPrivateMessage(const char* mesg, u16 pid);
+  void SendMessage(ChatType type, const std::string& mesg);
+  void SendPrivateMessage(const std::string& mesg, u16 pid);
   
   const std::deque<ChatEntry>& GetRecentChat();
 

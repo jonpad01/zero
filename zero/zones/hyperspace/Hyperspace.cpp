@@ -39,19 +39,42 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
             .Child<BuyNode>()
         .End()
         .Sequence() // sell a ship
-            .Child<SellShipQuery>()
+            .Child<SellShipQuery>() // success = move to selector
+                .Selector() // spectating or safe
+                    .Child<ShipQueryNode>(8) // success = move to buy
+                    .Selector()        
+                        .Child<SafeTileQueryNode>() // success = on safe tile
+                        .Child<WarpNode>() // warp to center
+                    .End()
+                .End()
             .Child<SellNode>()
         .End()
-        .Sequence() 
-            .Child<BuyItemQuery>()
+        .Sequence() // buy items
+            .Child<BuyItemQuery>() 
                 .Sequence()
-                    .InvertChild<ShipQueryNode>("transaction_ship")
-                     .Child<ShipRequestNode>("transaction_ship")
+                    .Selector()
+                        .Child<ShipQueryNode>("transaction_ship")
+                        .Child<ShipRequestNode>("transaction_ship")
+                    .End()
+                    .Selector()
+                        .Child<SafeTileQueryNode>() // success = on safe tile
+                        .Child<WarpNode>() // warp to center                    
+                    .End()
                 .End()
             .Child<BuyNode>()
         .End()
         .Sequence()
             .Child<SellItemQuery>()
+                 .Sequence()
+                    .Selector()
+                        .Child<ShipQueryNode>("transaction_ship")
+                        .Child<ShipRequestNode>("transaction_ship")
+                    .End()
+                    .Selector()
+                        .Child<SafeTileQueryNode>() // success = on safe tile
+                        .FailChild<WarpNode>() // warp to center                    
+                    .End()
+                .End()
             .Child<SellNode>()
          .End()
 
@@ -61,7 +84,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
          .End()
          .Sequence()
             .Child<ListenQuery>()
-            //.Child<ListenNode>()
+            .Child<ListenNode>()
          .End()
      .End();
   // clang-format on

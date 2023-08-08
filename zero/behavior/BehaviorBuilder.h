@@ -39,6 +39,13 @@ class CompositeBuilder {
     return *this;
   }
 
+  template <typename T, typename... Args>
+  CompositeBuilder& FailChild(Args... args) {
+    children.emplace_back(std::make_unique<FailNode>(std::make_unique<T>(std::forward<Args>(args)...)));
+    return *this;
+  }
+
+
   CompositeBuilder& Sequence();
   CompositeBuilder& Selector();
   CompositeBuilder& Parallel();

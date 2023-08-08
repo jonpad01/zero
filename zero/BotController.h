@@ -30,7 +30,7 @@ struct BotController {
   Zone zone;
   Time time;
 
-  BotController(Game& game, behavior::ExecuteContext& ctx, Zone zone);
+  BotController(Zone zone);
 
   void Update(float dt, Game& game, InputState& input, behavior::ExecuteContext& ctx);
   void SetZoneBuilder();

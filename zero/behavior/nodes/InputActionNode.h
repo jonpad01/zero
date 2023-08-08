@@ -48,7 +48,8 @@ struct WarpNode : public BehaviorNode {
 
     input->SetAction(InputAction::Warp, press);
 
-    return ExecuteResult::Success;
+    if (press) return ExecuteResult::Success;
+    return ExecuteResult::Failure;
   }
 };
 

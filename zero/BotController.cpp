@@ -23,8 +23,7 @@ namespace zero {
 
 
 // ctx.bot can't be called here because it hasnt been assigned yet
-BotController::BotController(Game& game, behavior::ExecuteContext& ctx, Zone zone) {
-  
+BotController::BotController(Zone zone) { 
   this->zone = zone;
   input = nullptr;
 }

@@ -78,6 +78,19 @@ class SuccessNode : public BehaviorNode {
   std::unique_ptr<BehaviorNode> child_;
 };
 
+class FailNode : public BehaviorNode {
+ public:
+  FailNode() : child_(nullptr) {}
+  FailNode(std::unique_ptr<BehaviorNode> child) : child_(std::move(child)) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override;
+
+  void Child(std::unique_ptr<BehaviorNode> child) { child_ = std::move(child); }
+
+ protected:
+  std::unique_ptr<BehaviorNode> child_;
+};
+
 class InvertNode : public BehaviorNode {
  public:
   InvertNode() : child_(nullptr) {}

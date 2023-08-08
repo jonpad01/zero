@@ -64,6 +64,13 @@ ExecuteResult SuccessNode::Execute(ExecuteContext& ctx) {
   return ExecuteResult::Success;
 }
 
+ExecuteResult FailNode::Execute(ExecuteContext& ctx) {
+  if (!child_) return ExecuteResult::Failure;
+
+  child_->Execute(ctx);
+  return ExecuteResult::Failure;
+}
+
 ExecuteResult InvertNode::Execute(ExecuteContext& ctx) {
   if (!child_) return ExecuteResult::Failure;
 
