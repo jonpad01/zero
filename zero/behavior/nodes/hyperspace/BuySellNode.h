@@ -46,6 +46,7 @@ struct ListenNode : public BehaviorNode {
 
       for (std::size_t i = 0; i < match_list.size(); i++) {
         std::size_t found = msg.find(match_list[i]);
+
         if (found != std::string::npos) {
           if (match_list[i] == kGoToDepotBuy) {
             std::size_t offset = 20;
@@ -117,16 +118,15 @@ struct BuyNode : public BehaviorNode {
     // send a buy command
     std::string buy_msg = "?";
 
-    for (std::string ship : buy_list) {
-      buy_msg += "|buy " + ship;
+    for (std::string item : buy_list) {
+      buy_msg += "|buy " + item;
     }
 
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Listen);
-    //bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>());
     bb.Set<int>("transaction_count", (int)buy_list.size());
 
-    return ExecuteResult::Failure;
+    return ExecuteResult::Success;
   }
 };
 
@@ -152,7 +152,6 @@ struct SellNode : public BehaviorNode {
 
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Listen);
-    //bb.Set<std::vector<std::string>>("sell_list", std::vector<std::string>());
     bb.Set<int>("transaction_count", (int)sell_list.size());
 
     return ExecuteResult::Failure;

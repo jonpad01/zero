@@ -17,6 +17,7 @@
 #include <zero/behavior/nodes/TimerNode.h>
 #include <zero/behavior/nodes/WaypointNode.h>
 #include <zero/behavior/nodes/hyperspace/BuySellNode.h>
+#include <zero/behavior/nodes/SetEnergyNode.h>
 
 namespace zero {
 
@@ -33,10 +34,11 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
                     .Child<ShipQueryNode>(8) // success = move to buy
                     .Selector()        
                         .Child<SafeTileQueryNode>() // success = on safe tile
-                        .Child<WarpNode>() // warp to center
+                        .FailChild<SetEnergyNode>(100)
+                        .FailChild<WarpNode>() // warp to center
                     .End()
                 .End()
-            .Child<BuyNode>()
+            .SuccessChild<BuyNode>()
         .End()
         .Sequence() // sell a ship
             .Child<SellShipQuery>() // success = move to selector
@@ -44,38 +46,43 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
                     .Child<ShipQueryNode>(8) // success = move to buy
                     .Selector()        
                         .Child<SafeTileQueryNode>() // success = on safe tile
-                        .Child<WarpNode>() // warp to center
+                        .FailChild<SetEnergyNode>(100)
+                        .FailChild<WarpNode>() // warp to center
                     .End()
                 .End()
-            .Child<SellNode>()
+            .SuccessChild<SellNode>()
         .End()
         .Sequence() // buy items
             .Child<BuyItemQuery>() 
                 .Sequence()
                     .Selector()
                         .Child<ShipQueryNode>("transaction_ship")
-                        .Child<ShipRequestNode>("transaction_ship")
+                        .FailChild<SetEnergyNode>(100)
+                        .FailChild<ShipRequestNode>("transaction_ship")
                     .End()
                     .Selector()
                         .Child<SafeTileQueryNode>() // success = on safe tile
-                        .Child<WarpNode>() // warp to center                    
+                        .FailChild<SetEnergyNode>(100)
+                        .FailChild<WarpNode>() // warp to center                    
                     .End()
                 .End()
-            .Child<BuyNode>()
+            .SuccessChild<BuyNode>()
         .End()
         .Sequence()
             .Child<SellItemQuery>()
                  .Sequence()
                     .Selector()
                         .Child<ShipQueryNode>("transaction_ship")
-                        .Child<ShipRequestNode>("transaction_ship")
+                        .FailChild<SetEnergyNode>(100)
+                        .FailChild<ShipRequestNode>("transaction_ship")
                     .End()
                     .Selector()
                         .Child<SafeTileQueryNode>() // success = on safe tile
+                        .FailChild<SetEnergyNode>(100)
                         .FailChild<WarpNode>() // warp to center                    
                     .End()
                 .End()
-            .Child<SellNode>()
+            .SuccessChild<SellNode>()
          .End()
 
          .Sequence()
@@ -84,7 +91,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
          .End()
          .Sequence()
             .Child<ListenQuery>()
-            .Child<ListenNode>()
+            .SuccessChild<ListenNode>()
          .End()
      .End();
   // clang-format on

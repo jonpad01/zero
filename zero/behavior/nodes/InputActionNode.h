@@ -35,16 +35,19 @@ struct WarpNode : public BehaviorNode {
     if (!self) return ExecuteResult::Failure;
 
     auto& input = ctx.bot->bot_controller->input;
+
     if (!input) return ExecuteResult::Failure;
+
+    ctx.bot->game->ship_controller.warp_input_cleared = true;
 
     bool press = true;
 
     // Handle warp in a special way because it only activates on initial press down.
-    if (ctx.blackboard.ValueOr("was_warping", false)) {
-      press = false;
-    }
+    //if (ctx.blackboard.ValueOr("was_warping", false)) {
+      //press = false;
+    //}
 
-    ctx.blackboard.Set("was_warping", press);
+    //ctx.blackboard.Set("was_warping", press);
 
     input->SetAction(InputAction::Warp, press);
 
