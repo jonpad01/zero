@@ -72,6 +72,7 @@ struct ChatController {
   void SendPrivateMessage(const std::string& mesg, u16 pid);
   
   const std::deque<ChatEntry>& GetRecentChat();
+  void ClearRecentChat();
 
   void OnChatPacket(u8* packet, size_t size);
 

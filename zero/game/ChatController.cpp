@@ -220,8 +220,8 @@ void ChatController::OnChatPacket(u8* packet, size_t size) {
 
   entry->sound = sound;
 
-  recent_chat.push_front(otherEntry);
-  if (recent_chat.size() > 20) recent_chat.pop_back();
+  recent_chat.push_back(otherEntry);
+  if (recent_chat.size() > 64) recent_chat.pop_front();
 }
 
 ChatEntry* ChatController::PushEntry(const char* mesg, size_t size, ChatType type) {
@@ -325,6 +325,10 @@ char* PrivateHistory::GetPrevious(char* current) {
 const std::deque<ChatEntry>& ChatController::GetRecentChat() {
   entries_read = recent_chat.size();
   return recent_chat;
+}
+
+void ChatController::ClearRecentChat() {
+  recent_chat.clear();
 }
 
 }  // namespace zero

@@ -51,27 +51,7 @@ struct AreaContainQueryNode : public BehaviorNode {
   float distance;
 };
 
-struct SafeTileQueryNode : public BehaviorNode {
-  SafeTileQueryNode(Vector2f position) : coord(position) {}
-  SafeTileQueryNode() : default_constructor(true) {}
 
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto self = ctx.bot->game->player_manager.GetSelf();
-
-    if (default_constructor) {
-      coord = ctx.bot->game->player_manager.GetSelf()->position;
-    }
-   
-    bool on_safe = ctx.bot->game->GetMap().GetTileId(coord) == kTileSafeId;
-
-    if (!on_safe) return ExecuteResult::Failure;
-
-    return ExecuteResult::Success;
-  }
-
-  Vector2f coord;
-  bool default_constructor = false;
-};
 
 }  // namespace behavior
 }  // namespace zero

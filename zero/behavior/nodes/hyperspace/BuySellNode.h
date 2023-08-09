@@ -24,12 +24,15 @@ const std::string kGoToCenter = "Go to Center Safe to ";
 const std::string kGoToDepotBuy = "Go to Ammo Depots to buy it!";
 const std::string kGoToDepotSell = "Go to Ammo Depots to sell it!";
 
+const std::string kLine = "+-";
+const std::string kListing = "| ";
+
 const std::vector<std::string> match_list{
     kBuySuccess, kSellSuccess, kSlotsFull, kTooMany,   kDoNotHave,  kNotAllowed, kNoItem,       kSpectator,
     kNotAvalibe, kAlreadyOwn,  kDoNotOwn,  kUsingShip, kPleaseWait, kGoToCenter, kGoToDepotBuy, kGoToDepotSell};
 
-struct ListenNode : public BehaviorNode {
-  ListenNode() {}
+struct BuySellListenNode : public BehaviorNode {
+  BuySellListenNode() {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
     auto& bot = ctx.bot;
@@ -54,14 +57,14 @@ struct ListenNode : public BehaviorNode {
             std::string item = msg.substr(offset, next - offset);
             bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({item}));
             game->chat.SendPrivateMessage("Moving to ammo depot to buy " + item + ".", sender);
-            bb.Set<ItemTransaction>("item_transaction", ItemTransaction::DepotBuy);
+            bb.Set<ItemTransaction>("transaction_type", ItemTransaction::DepotBuy);
           } else if (match_list[i] == kGoToDepotSell) {
             std::size_t offset = 21;
             std::size_t next = msg.find(" here.", offset);
             std::string item = msg.substr(offset, next - offset);
             bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({item}));
             game->chat.SendPrivateMessage("Moving to ammo depot to sell " + item + ".", sender);
-            bb.Set<ItemTransaction>("item_transaction", ItemTransaction::DepotSell);
+            bb.Set<ItemTransaction>("transaction_type", ItemTransaction::DepotSell);
           } else if (match_list[i] == kGoToCenter) {
             game->chat.SendPrivateMessage(
                 "I was supposed to be on safe before buying/selling, but something went wrong.  Please try again.",
@@ -77,7 +80,7 @@ struct ListenNode : public BehaviorNode {
     }
 
     if (count == 0) {
-      bb.Set<ItemTransaction>("item_transaction", ItemTransaction::None);
+      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::None);
     } else {
       bb.Set<int>("transaction_count", count);
     }
@@ -87,8 +90,8 @@ struct ListenNode : public BehaviorNode {
 
 };
 
-struct ShipStatusNode : public BehaviorNode {
-  ShipStatusNode() {}
+struct ShipStatusListenNode : public BehaviorNode {
+  ShipStatusListenNode() {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
     auto& bot = ctx.bot;
@@ -96,10 +99,55 @@ struct ShipStatusNode : public BehaviorNode {
     auto& game = ctx.bot->game;
     auto self = ctx.bot->game->player_manager.GetSelf();
 
-    //bb.Set<ItemTransaction>("item_transaction", ItemTransaction::None);
+    int line_count = bb.ValueOr<int>("transaction_count", 0);
+    uint16_t sender = bb.ValueOr<uint16_t>("transaction_sender_id", 0);
 
-    return ExecuteResult::Failure;
+    for (const ChatEntry& entry : game->chat.GetRecentChat()) {
+      if (entry.type != ChatType::Arena) continue;
+      std::string msg(entry.message);
+
+      std::size_t found = msg.find(kLine);
+      if (found != std::string::npos) {
+        game->chat.SendPrivateMessage(msg, sender);
+        line_count++;
+        continue;
+      }
+      found = msg.find(kListing);
+      if (found != std::string::npos) {
+        game->chat.SendPrivateMessage(msg, sender);
+        continue;
+      }
+    }
+
+    if (line_count >= 4) {
+      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::None);
+    } else {
+      bb.Set<int>("transaction_count", line_count);
+    }
   }
+};
+
+struct ShipStatusNode : public BehaviorNode {
+  ShipStatusNode(const char* key) : key(key) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override {
+    auto& bot = ctx.bot;
+    auto& bb = ctx.blackboard;
+    auto& game = ctx.bot->game;
+    auto self = ctx.bot->game->player_manager.GetSelf();
+
+    int ship = bb.ValueOr<int>(key, self->ship);
+
+    game->chat.ClearRecentChat();
+    game->chat.SendMessage(ChatType::Public, "?shipstatus " + std::to_string(ship));
+
+    bb.Set<ItemTransaction>("transaction_type", ItemTransaction::ShipStatusListen);
+    bb.Set<int>("transaction_count", 0);
+
+    return ExecuteResult::Success;
+  }
+
+  const char* key;
 };
 
 struct BuyNode : public BehaviorNode {
@@ -111,7 +159,7 @@ struct BuyNode : public BehaviorNode {
     auto& game = ctx.bot->game;
     auto self = ctx.bot->game->player_manager.GetSelf();
 
-    std::vector<std::string> buy_list = bb.ValueOr<std::vector<std::string>>("buy_list", std::vector<std::string>());
+    std::vector<std::string> buy_list = bb.ValueOr<std::vector<std::string>>("transaction_buy_list", std::vector<std::string>());
 
     if (buy_list.empty()) return ExecuteResult::Failure;
 
@@ -122,8 +170,9 @@ struct BuyNode : public BehaviorNode {
       buy_msg += "|buy " + item;
     }
 
+    game->chat.ClearRecentChat();
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
-    bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Listen);
+    bb.Set<ItemTransaction>("transaction_type", ItemTransaction::BuySellListen);
     bb.Set<int>("transaction_count", (int)buy_list.size());
 
     return ExecuteResult::Success;
@@ -139,157 +188,45 @@ struct SellNode : public BehaviorNode {
     auto& game = ctx.bot->game;
     auto self = ctx.bot->game->player_manager.GetSelf();
 
-    std::vector<std::string> sell_list = bb.ValueOr<std::vector<std::string>>("sell_list", std::vector<std::string>());
+    std::vector<std::string> sell_list = bb.ValueOr<std::vector<std::string>>("transaction_sell_list", std::vector<std::string>());
 
     if (sell_list.empty()) return ExecuteResult::Failure;
 
     // send a buy command
     std::string buy_msg = "?";
 
-    for (std::string ship : sell_list) {
-      buy_msg += "|sell " + ship;
+    for (std::string item : sell_list) {
+      buy_msg += "|sell " + item;
     }
 
+    game->chat.ClearRecentChat();
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
-    bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Listen);
+    bb.Set<ItemTransaction>("transaction_type", ItemTransaction::BuySellListen);
     bb.Set<int>("transaction_count", (int)sell_list.size());
 
     return ExecuteResult::Failure;
   }
 };
 
-struct BuyItemQuery : public BehaviorNode {
-  BuyItemQuery() {}
+struct ItemTransactionQuery : public BehaviorNode {
+  ItemTransactionQuery(ItemTransaction type, const char* key) : type(type), key(key) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
     auto& bb = ctx.blackboard;
 
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
+    ItemTransaction transaction = bb.ValueOr<ItemTransaction>(key, ItemTransaction::None);
 
-    if (transaction == ItemTransaction::Buy) {
+    if (transaction == type) {
       return ExecuteResult::Success;
     }
 
     return ExecuteResult::Failure;
-  }
-};
-
-struct SellItemQuery : public BehaviorNode {
-  SellItemQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::Sell) {
-      return ExecuteResult::Success;
     }
 
-    return ExecuteResult::Failure;
-  }
+  private: 
+   ItemTransaction type;
+   const char* key;
 };
-
-struct BuyShipQuery : public BehaviorNode {
-  BuyShipQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::BuyShip) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-struct SellShipQuery : public BehaviorNode {
-  SellShipQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::SellShip) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-struct DepotBuyQuery : public BehaviorNode {
-  DepotBuyQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::DepotBuy) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-struct DepotSellQuery : public BehaviorNode {
-  DepotSellQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::DepotSell) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-struct ListItemsQuery : public BehaviorNode {
-  ListItemsQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::ListItems) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-struct ListenQuery : public BehaviorNode {
-  ListenQuery() {}
-
-  ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto& bb = ctx.blackboard;
-
-    ItemTransaction transaction = bb.ValueOr<ItemTransaction>("item_transaction", ItemTransaction::None);
-
-    if (transaction == ItemTransaction::Listen) {
-      return ExecuteResult::Success;
-    }
-
-    return ExecuteResult::Failure;
-  }
-};
-
-
-
-
-
 
 
 }

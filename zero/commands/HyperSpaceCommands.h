@@ -27,13 +27,9 @@ class HSShipStatusCommand : public CommandExecutor {
       }
     }
 
-    bb.Set<ItemTransaction>("item_transaction", ItemTransaction::ListItems);
+    bb.Set<ItemTransaction>("transaction_type", ItemTransaction::ListItems);
     bb.Set<Ship>("transaction_ship", ship);
-    //bb.Set<bool>("transaction_message_sent", false);
-    // TODO: move timing into the behavior node after it sends a buy message
-    //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
     bb.Set<uint16_t>("transaction_sender_id", player->id);
-    //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
   }
 
   void SendUsage(ChatController& chat, uint16_t sender) {
@@ -75,13 +71,9 @@ class HSBuyCommand : public CommandExecutor {
       list.emplace_back(item);
      }
 
-     bb.Set<std::vector<std::string>>("buy_list", list);
-     //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
+     bb.Set<std::vector<std::string>>("transaction_buy_list", list);
      bb.Set<uint16_t>("transaction_sender_id", player->id);
-     //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
-     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Buy);
-     //bb.Set<bool>("ItemTransactionMessageSent", false);
-     //bb.Set<bool>("ItemTransactionSetShipSent", false);
+     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Buy);
      bb.Set<int>("transaction_ship", ship);
 
   }
@@ -124,13 +116,9 @@ class HSSellCommand : public CommandExecutor {
       list.emplace_back(item);
      }
   
-     bb.Set<std::vector<std::string>>("sell_list", list);
-     //bb.Set<uint64_t>("ItemTransactionAllowedTime", 5000);
+     bb.Set<std::vector<std::string>>("transaction_sell_list", list);
      bb.Set<uint16_t>("transaction_sender_id", player->id);
-     //bb.Set<uint64_t>("ItemTransactionTimeStamp", bot.time.GetTime());
-     bb.Set<ItemTransaction>("item_transaction", ItemTransaction::Sell);
-    // bb.Set<bool>("ItemTransactionMessageSent", false);
-    // bb.Set<bool>("ItemTransactionSetShipSent", false);
+     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Sell);
      bb.Set<int>("transaction_ship", ship);
 
   }

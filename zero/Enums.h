@@ -5,7 +5,7 @@
 
 namespace zero {
 enum class UpdateState : short { Clear, Wait, Reload };
-enum class ItemTransaction : short { Buy, Sell, DepotBuy, DepotSell, BuyShip, SellShip, ListItems, Listen, None };
+enum class ItemTransaction : short { Buy, Sell, DepotBuy, DepotSell, BuyShip, SellShip, ListItems, BuySellListen, ShipStatusListen, None };
 enum class Role : short { Anchor, Rusher, Bomber, Gunner, Flagger, Turret, EMP, PowerBaller, None };
 enum class Area : short { Center, Base, None };
 enum class BaseDuelState : short { Running, Paused, Ending, NotRunning };

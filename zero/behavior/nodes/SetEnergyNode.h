@@ -20,7 +20,7 @@ struct SetEnergyNode : public BehaviorNode {
 	  
 	  uint32_t max_energy = ctx.bot->game->ship_controller.ship.energy;
 
-	  self->energy = int(max_energy) * (percent / 100);
+	  self->energy = float(int(max_energy) * (percent / 100));
 
 	  return ExecuteResult::Success;
   }
