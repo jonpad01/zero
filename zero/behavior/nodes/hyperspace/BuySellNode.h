@@ -7,6 +7,12 @@
 namespace zero {
 namespace behavior {
 
+struct TransactionItem {
+  std::string name;
+  ItemTransaction type;
+  uint16_t sender;
+};
+
 const std::string kBuySuccess = "You purchased ";
 const std::string kSellSuccess = "You sold ";
 const std::string kSlotsFull = "You do not have enough free ";
@@ -58,6 +64,9 @@ struct BuySellListenNode : public BehaviorNode {
             bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({item}));
             game->chat.SendPrivateMessage("Moving to ammo depot to buy " + item + ".", sender);
             bb.Set<ItemTransaction>("transaction_type", ItemTransaction::DepotBuy);
+            // this isnt very good because it will just push in the first item and ignore
+            // any other items that require moving to the depot
+            bb.Set<std::vector<std::string>>("transaction_buy_list", std::vector<std::string>({item}));
           } else if (match_list[i] == kGoToDepotSell) {
             std::size_t offset = 21;
             std::size_t next = msg.find(" here.", offset);
@@ -65,6 +74,7 @@ struct BuySellListenNode : public BehaviorNode {
             bb.Set<std::vector<std::string>>("buy_list", std::vector<std::string>({item}));
             game->chat.SendPrivateMessage("Moving to ammo depot to sell " + item + ".", sender);
             bb.Set<ItemTransaction>("transaction_type", ItemTransaction::DepotSell);
+            bb.Set<std::vector<std::string>>("transaction_sell_list", std::vector<std::string>({item}));
           } else if (match_list[i] == kGoToCenter) {
             game->chat.SendPrivateMessage(
                 "I was supposed to be on safe before buying/selling, but something went wrong.  Please try again.",
@@ -79,7 +89,7 @@ struct BuySellListenNode : public BehaviorNode {
       }
     }
 
-    if (count == 0) {
+    if (count <= 0) {
       bb.Set<ItemTransaction>("transaction_type", ItemTransaction::None);
     } else {
       bb.Set<int>("transaction_count", count);
@@ -172,6 +182,7 @@ struct BuyNode : public BehaviorNode {
 
     game->chat.ClearRecentChat();
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
+    bb.Set<std::vector<std::string>>("transaction_buy_list", std::vector<std::string>());
     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::BuySellListen);
     bb.Set<int>("transaction_count", (int)buy_list.size());
 
@@ -201,6 +212,7 @@ struct SellNode : public BehaviorNode {
 
     game->chat.ClearRecentChat();
     game->chat.SendMessage(ChatType::Public, buy_msg.c_str());
+    bb.Set<std::vector<std::string>>("transaction_sell_list", std::vector<std::string>());
     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::BuySellListen);
     bb.Set<int>("transaction_count", (int)sell_list.size());
 

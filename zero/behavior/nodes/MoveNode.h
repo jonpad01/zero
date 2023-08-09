@@ -8,6 +8,24 @@
 namespace zero {
 namespace behavior {
 
+ struct SpeedQueryNode : public BehaviorNode {
+  SpeedQueryNode(float speed, float allowed) : speed(speed), allowed(allowed) {}
+  SpeedQueryNode(float speed) : speed(speed), allowed(1.0f) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override {
+  
+    float current_speed = ctx.bot->game->player_manager.GetSelf()->velocity.Length();
+
+    if (speed - current_speed < allowed) {
+      return ExecuteResult::Success;
+    }
+    return ExecuteResult::Failure;
+  }
+
+  float speed;
+  float allowed;
+ };
+
 struct SeekNode : public BehaviorNode {
   SeekNode(const char* position_key) : position_key(position_key), target_distance_key(nullptr) {}
   SeekNode(const char* position_key, const char* target_distance_key)

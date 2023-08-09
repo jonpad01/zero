@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef REGION_REGISTRY_H
+#define REGION_REGISTRY_H
+
 #include <zero/Hash.h>
 #include <zero/Math.h>
 #include <zero/game/Map.h>
@@ -124,3 +127,5 @@ class RegionRegistry {
   int region_tile_counts_[1024 * 1024];
 };
 }  // namespace zero
+
+#endif

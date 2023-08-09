@@ -21,6 +21,19 @@
 
 namespace zero {
 
+// reference coord for region registry
+const MapCoord kHyperTunnelCoord = MapCoord(16, 16);
+// gates from center to tunnel
+const std::vector<MapCoord> kCenterGates = {MapCoord(388, 395), MapCoord(572, 677)};
+// gates to go back to center
+const std::vector<MapCoord> kTunnelToCenterGates = {MapCoord(62, 351), MapCoord(961, 350)};
+// gates to 7 bases plus top area in order
+const std::vector<MapCoord> kBaseTunnelGates = {MapCoord(961, 63),  MapCoord(960, 673), MapCoord(960, 960),
+                                                MapCoord(512, 959), MapCoord(64, 960),  MapCoord(64, 672),
+                                                MapCoord(65, 65),   MapCoord(512, 64)};
+
+const Vector2f kAmmoDepot = Vector2f(590, 349);
+
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
   using namespace behavior;
   BehaviorBuilder builder;
@@ -84,7 +97,24 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
                 .End()
             .SuccessChild<SellNode>()
          .End()
-
+         .Sequence()
+            .Child<ItemTransactionQuery>(ItemTransaction::DepotBuy, "transaction_type")
+            .Child<GoToNode>(kAmmoDepot)
+            .Child<AreaContainQueryNode>(kAmmoDepot, 1.0f)
+            .Child<TileQueryNode>(kTileSafeId)
+            .Child<InputActionNode>(InputAction::Bullet)
+            .Child<SpeedQueryNode>(0.0f)
+            .SuccessChild<BuyNode>()
+         .End()
+         .Sequence()
+            .Child<ItemTransactionQuery>(ItemTransaction::DepotSell, "transaction_type")
+            .Child<GoToNode>(kAmmoDepot)
+            .Child<AreaContainQueryNode>(kAmmoDepot, 1.0f)
+            .Child<TileQueryNode>(kTileSafeId)
+            .Child<InputActionNode>(InputAction::Bullet)
+            .Child<SpeedQueryNode>(0.0f)
+            .SuccessChild<SellNode>()
+         .End()
          .Sequence()
             .Child<ItemTransactionQuery>(ItemTransaction::ListItems, "transaction_type")
             .Child<ShipStatusNode>("transaction_ship")
