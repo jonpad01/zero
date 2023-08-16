@@ -54,7 +54,6 @@ static_assert(kServerIndex < ZERO_ARRAY_SIZE(kServers), "Bad server index");
 }  // namespace zero
 
 int main(int argc, char* argv[]) {
-
   if (argc < 3) {
     std::cout << "Enter Username and Password as arguments.";
     return 1;
@@ -65,17 +64,21 @@ int main(int argc, char* argv[]) {
 #ifdef _WIN32
   SetConsoleCtrlHandler(ConsoleCloserHandler, TRUE);
 #endif
- 
+
   zero::ZeroBot bot;
   g_Bot = &bot;
 
   if (!bot.Initialize(argv[1], argv[2])) {
- // if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
+    // if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
     return 1;
   }
 
-  bot.JoinZone(zero::kServers[zero::kServerIndex]);
-  bot.Run();
+  // if run exits reconect
+  while (true) {
+    bot.JoinZone(zero::kServers[zero::kServerIndex]);
+    bot.Run();
+    Sleep(5000);
+  }
 
   return 0;
 }

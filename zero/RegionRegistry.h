@@ -6,6 +6,7 @@
 #include <zero/Hash.h>
 #include <zero/Math.h>
 #include <zero/game/Map.h>
+#include <zero/enums.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -104,25 +105,34 @@ struct RegionFiller {
 
 class RegionRegistry {
  public:
-  RegionRegistry() : region_count_(0) { memset(coord_regions_, 0xFF, sizeof(coord_regions_)); }
+  RegionRegistry() : region_count_(0), current_region_(nullptr) {
+    memset(coord_regions_, 0xFF, sizeof(coord_regions_));
+  }
+  ~RegionRegistry() {
+    if (current_region_) delete[] current_region_;
+  }
 
   bool IsConnected(MapCoord a, MapCoord b) const;
   bool IsEdge(MapCoord coord) const;
   int GetTileCount(MapCoord coord) const;
   void CreateAll(const Map& map, float radius);
 
+  MapCoord GetRandomRegionTile(MapCoord pos);
+  
   void DebugUpdate(Vector2f position);
 
  private:
   bool IsRegistered(MapCoord coord) const;
   void Insert(MapCoord coord, RegionIndex index);
   std::size_t GetRegionIndex(MapCoord coord);
+  void FillCurrentRegion(RegionIndex index);
 
   RegionIndex CreateRegion();
 
   RegionIndex region_count_;
 
   RegionIndex coord_regions_[1024 * 1024];
+  MapCoord* current_region_;
   SharedRegionOwnership outside_edges_[1024 * 1024];
   int region_tile_counts_[1024 * 1024];
 };

@@ -9,21 +9,21 @@ namespace zero {
 namespace behavior {
 
  struct SpeedQueryNode : public BehaviorNode {
-  SpeedQueryNode(float speed, float allowed) : speed(speed), allowed(allowed) {}
-  SpeedQueryNode(float speed) : speed(speed), allowed(1.0f) {}
+  SpeedQueryNode(float speed, float deadzone) : speed(speed), deadzone(deadzone) {}
+   SpeedQueryNode(float speed) : speed(speed), deadzone(1.0f) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
   
     float current_speed = ctx.bot->game->player_manager.GetSelf()->velocity.Length();
 
-    if (speed - current_speed < allowed) {
+    if (speed - current_speed < deadzone) {
       return ExecuteResult::Success;
     }
     return ExecuteResult::Failure;
   }
 
   float speed;
-  float allowed;
+  float deadzone;
  };
 
 struct SeekNode : public BehaviorNode {

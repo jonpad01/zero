@@ -16,5 +16,6 @@ bool IsDigit(const std::string& str);
 bool IsWhitespace(char c);
 std::string RemoveWhitespace(const std::string& str);
 std::string GetShipName(int ship);
+unsigned int GetRandomNumber(unsigned int min, unsigned int max);
 }
 #endif

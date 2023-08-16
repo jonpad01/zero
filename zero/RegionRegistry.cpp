@@ -1,5 +1,6 @@
 #include <zero/game/Map.h>
 #include <zero/RegionRegistry.h>
+#include <zero/Common.h>
 
 #include <vector>
 
@@ -8,6 +9,8 @@ namespace zero {
 bool IsValidPosition(MapCoord coord) {
   return coord.x >= 0 && coord.x < 1024 && coord.y >= 0 && coord.y < 1024;
 }
+
+
 
 RegionFiller::RegionFiller(const Map& map, float radius, RegionIndex* coord_regions, SharedRegionOwnership* edges,
                            int* region_tile_counts)
@@ -525,6 +528,41 @@ RegionIndex RegionRegistry::CreateRegion() {
 RegionIndex RegionRegistry::GetRegionIndex(MapCoord coord) {
   if (!IsValidPosition(coord)) return -1;
   return coord_regions_[coord.y * 1024 + coord.x];
+}
+
+MapCoord RegionRegistry::GetRandomRegionTile(MapCoord pos) {
+  std::size_t index = GetRegionIndex(pos);
+
+  if (!current_region_ || GetRegionIndex(current_region_[0]) != index) {
+    FillCurrentRegion(index);
+  } 
+
+  int max = region_tile_counts_[index] - 1;
+  if (max < 0) max = 0;
+
+  unsigned int randNum = GetRandomNumber(0, (unsigned int)max);
+
+  return current_region_[randNum];
+}
+
+void RegionRegistry::FillCurrentRegion(RegionIndex index) {
+  int count = 0;
+
+  if (current_region_) {
+    delete[] current_region_;
+    current_region_ = nullptr;
+  }
+
+  current_region_ = new MapCoord[region_tile_counts_[index]];
+
+  for (uint16_t y = 0; y < 1024; ++y) {
+    for (uint16_t x = 0; x < 1024; ++x) {
+      if (coord_regions_[y * 1024 + x] == index) {
+        current_region_[count] = MapCoord(x, y);
+        count++;
+      }
+    }
+  }
 }
 
 bool RegionRegistry::IsConnected(MapCoord a, MapCoord b) const {

@@ -7,6 +7,33 @@
 namespace zero {
 namespace behavior {
 
+    struct RandomWaypointNode : public BehaviorNode {
+  RandomWaypointNode(const char* position_key, float nearby_radius) :
+        position_key(position_key),
+        nearby_radius_sq(nearby_radius * nearby_radius) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override {
+    auto self = ctx.bot->game->player_manager.GetSelf();
+    auto& registry = ctx.bot->bot_controller->region_registry;
+
+    if (!self) return ExecuteResult::Failure;
+
+    Vector2f target = ctx.blackboard.ValueOr(position_key, self->position);
+
+    if (self->position.DistanceSq(target) <= nearby_radius_sq) {
+      MapCoord result = registry.get()->GetRandomRegionTile(self->position);
+      target = Vector2f((float)result.x, (float)result.y);
+    }
+
+    ctx.blackboard.Set<Vector2f>(position_key, target);
+
+    return ExecuteResult::Success;
+  }
+
+  const char* position_key;
+  float nearby_radius_sq;
+};
+
 struct WaypointNode : public BehaviorNode {
   WaypointNode(const char* waypoints_key, const char* index_key, const char* position_key, float nearby_radius)
       : waypoints_key(waypoints_key),
@@ -16,22 +43,24 @@ struct WaypointNode : public BehaviorNode {
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
     auto self = ctx.bot->game->player_manager.GetSelf();
+    auto& registry = ctx.bot->bot_controller->region_registry;
+
     if (!self) return ExecuteResult::Failure;
 
-    auto opt_waypoints = ctx.blackboard.Value<std::vector<Vector2f>>(waypoints_key);
-    if (!opt_waypoints.has_value()) return ExecuteResult::Failure;
+      auto opt_waypoints = ctx.blackboard.Value<std::vector<Vector2f>>(waypoints_key);
+      if (!opt_waypoints.has_value()) return ExecuteResult::Failure;
 
-    std::vector<Vector2f>& waypoints = opt_waypoints.value();
-    if (waypoints.empty()) return ExecuteResult::Failure;
+      std::vector<Vector2f>& waypoints = opt_waypoints.value();
+      if (waypoints.empty()) return ExecuteResult::Failure;
 
-    size_t index = ctx.blackboard.ValueOr<size_t>(index_key, 0);
+      size_t index = ctx.blackboard.ValueOr<size_t>(index_key, 0);
 
-    if (index >= waypoints.size()) {
-      index = 0;
-    }
+      if (index >= waypoints.size()) {
+        index = 0;
+      }
 
-    Vector2f& target = waypoints[index];
-
+      Vector2f& target = waypoints[index];
+    
     if (self->position.DistanceSq(target) <= nearby_radius_sq) {
       index = (index + 1) % waypoints.size();
       target = waypoints[index];

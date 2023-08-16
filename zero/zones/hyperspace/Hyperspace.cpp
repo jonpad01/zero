@@ -193,7 +193,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
                     .End()
                 .End()
             .Sequence() // Follow set waypoints.
-                .Child<WaypointNode>("waypoints", "waypoint_index", "waypoint_position", 15.0f)
+                .Child<RandomWaypointNode>("waypoint_position", 15.0f)
                 .Selector()
                     .Sequence()
                         .InvertChild<VisibilityQueryNode>("waypoint_position")
@@ -329,7 +329,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
                     .End()
                 .End()
             .Sequence()
-                .Child<WaypointNode>("waypoints", "waypoint_index", "waypoint_position", 15.0f)
+                .Child<RandomWaypointNode>("waypoint_position", 15.0f)
                 .Selector()
                     .Sequence()
                         .InvertChild<VisibilityQueryNode>("waypoint_position")

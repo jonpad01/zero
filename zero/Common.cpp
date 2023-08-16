@@ -1,4 +1,5 @@
 #include "Common.h"
+#include <random>
 
 
 
@@ -147,6 +148,14 @@ std::string GetShipName(int ship) {
     }
   }
   return "";
+}
+
+unsigned int GetRandomNumber(unsigned int min, unsigned int max) {
+  std::random_device dev;
+  std::mt19937 rng(dev());
+  std::uniform_int_distribution<std::mt19937::result_type> num(min, max);
+
+  return num(rng);
 }
 
 }  // namespace zero
