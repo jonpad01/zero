@@ -12,9 +12,9 @@ class AnchorCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Switching to anchor role.", player->id);
+    chat.SendPrivateMessage("Switching to anchor role.", sender);
 
     bb.Set<Role>("CombatRole", Role::Anchor);
   }
@@ -32,9 +32,9 @@ class RushCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+   // Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Switching to rusher role.", player->id);
+    chat.SendPrivateMessage("Switching to rusher role.", sender);
 
     bb.Set<Role>("CombatRole", Role::Rusher);
   }

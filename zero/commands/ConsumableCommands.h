@@ -13,9 +13,9 @@ class RepelCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning repels on.", player->id);
+    chat.SendPrivateMessage("Turning repels on.", sender);
     
     bb.Set<bool>("AllowRepel", true);
   }
@@ -33,9 +33,9 @@ class RepelOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning repels off.", player->id);
+    chat.SendPrivateMessage("Turning repels off.", sender);
     
     bb.Set<bool>("AllowRepel", false);
   }
@@ -53,9 +53,9 @@ class BurstCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning bursts on.", player->id);
+    chat.SendPrivateMessage("Turning bursts on.", sender);
 
     bb.Set<bool>("AllowBurst", true);
   }
@@ -73,9 +73,9 @@ class BurstOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning bursts off.", player->id);
+    chat.SendPrivateMessage("Turning bursts off.", sender);
 
     bb.Set<bool>("AllowBurst", false);
   }
@@ -93,9 +93,9 @@ class DecoyCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning decoys on.", player->id);
+    chat.SendPrivateMessage("Turning decoys on.", sender);
 
     bb.Set<bool>("AllowDecoy", true);
   }
@@ -113,9 +113,9 @@ class DecoyOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning decoys off.", player->id);
+    chat.SendPrivateMessage("Turning decoys off.", sender);
 
     bb.Set<bool>("AllowDecoy", false);
   }
@@ -133,9 +133,9 @@ class RocketCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning rockets on.", player->id);
+    chat.SendPrivateMessage("Turning rockets on.", sender);
 
     bb.Set<bool>("AllowRocket", true);
   }
@@ -153,9 +153,9 @@ class RocketOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning rockets off.", player->id);
+    chat.SendPrivateMessage("Turning rockets off.", sender);
 
     bb.Set<bool>("AllowRocket", false);
   }
@@ -173,9 +173,9 @@ class BrickCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning bricks on.", player->id);
+    chat.SendPrivateMessage("Turning bricks on.", sender);
 
     bb.Set<bool>("AllowBrick", true);
   }
@@ -193,9 +193,9 @@ class BrickOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning bricks off.", player->id);
+    chat.SendPrivateMessage("Turning bricks off.", sender);
 
     bb.Set<bool>("AllowBrick", false);
   }
@@ -213,9 +213,9 @@ class PortalCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning portals on.", player->id);
+    chat.SendPrivateMessage("Turning portals on.", sender);
 
     bb.Set<bool>("AllowPortal", true);
   }
@@ -233,9 +233,9 @@ class PortalOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning portals off.", player->id);
+    chat.SendPrivateMessage("Turning portals off.", sender);
 
     bb.Set<bool>("AllowPortal", false);
   }
@@ -253,9 +253,9 @@ class ThorCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning thors on.", player->id);
+    chat.SendPrivateMessage("Turning thors on.", sender);
 
     bb.Set<bool>("AllowThor", true);
   }
@@ -273,9 +273,9 @@ class ThorOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("Turning thors off.", player->id);
+    chat.SendPrivateMessage("Turning thors off.", sender);
 
     bb.Set<bool>("AllowThor", false);
   }

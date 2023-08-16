@@ -12,8 +12,8 @@ class CommandsCommand : public CommandExecutor {
  public:
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     if (sender.empty()) return;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
-    if (!player) return;
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //if (!player) return;
 
     int requester_level = cmd.GetSecurityLevel(sender);
     Commands& commands = cmd.GetCommands();
@@ -67,7 +67,7 @@ class CommandsCommand : public CommandExecutor {
 
       std::string output = trigger.triggers + " - " + desc + " [" + std::to_string(security) + "]";
 
-      bot.game->chat.SendPrivateMessage(output.c_str(), player->id);
+      bot.game->chat.SendPrivateMessage(output.c_str(), sender);
     }
   }
 
@@ -86,7 +86,7 @@ class HelpCommand : public CommandExecutor {
     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
     if (!player) return;
 
-    bot.game->chat.SendPrivateMessage("-- !commands {.c} -- see command list (pm)", player->id);
+    bot.game->chat.SendPrivateMessage("-- !commands {.c} -- see command list (pm)", sender);
   }
 
   CommandAccessFlags GetAccess() { return CommandAccess_Private; }
@@ -101,15 +101,15 @@ class DelimiterCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     if (sender.empty()) return;
 
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
     bot.game->chat.SendPrivateMessage(
-        "The ';' character can be used to send more than one command in a single message.", player->id);
-    bot.game->chat.SendPrivateMessage("", player->id);
-    bot.game->chat.SendPrivateMessage("Example:  .setship 2;anchor;setfreq 1", player->id);
-    bot.game->chat.SendPrivateMessage("", player->id);
-    bot.game->chat.SendPrivateMessage("The '|' character can be used to buy multiple items in hyperspace.", player->id);
-    bot.game->chat.SendPrivateMessage("Example: .buy 7|radiating coils|close combat", player->id);
+        "The ';' character can be used to send more than one command in a single message.", sender);
+    bot.game->chat.SendPrivateMessage("", sender);
+    bot.game->chat.SendPrivateMessage("Example:  .setship 2;anchor;setfreq 1", sender);
+    bot.game->chat.SendPrivateMessage("", sender);
+    bot.game->chat.SendPrivateMessage("The '|' character can be used to buy multiple items in hyperspace.", sender);
+    bot.game->chat.SendPrivateMessage("Example: .buy 7|radiating coils|close combat", sender);
   }
 
   CommandAccessFlags GetAccess() { return CommandAccess_Private; }
@@ -133,8 +133,8 @@ class ModListCommand : public CommandExecutor {
       output += op + " [" + std::to_string(level) + "] ";
     }
 
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
-    bot.game->chat.SendPrivateMessage(output.c_str(), player->id);
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    bot.game->chat.SendPrivateMessage(output.c_str(), sender);
   }
 
   CommandAccessFlags GetAccess() { return CommandAccess_Private; }

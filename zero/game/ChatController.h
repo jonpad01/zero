@@ -67,9 +67,11 @@ struct ChatController {
   void AddMessage(ChatType type, const char* fmt, ...);
 
   void SendMessage(ChatType type, const char* mesg);
-  void SendPrivateMessage(const char* mesg, u16 pid);
   void SendMessage(ChatType type, const std::string& mesg);
-  void SendPrivateMessage(const std::string& mesg, u16 pid);
+  void SendPrivateMessage(const char* mesg, const char* sender);
+  void SendPrivateMessage(const std::string& mesg, const std::string& sender);
+  void SendPrivateMessage(const std::string& mesg, uint16_t sender);
+  void SendPrivateMessage(const char* mesg, uint16_t sender);
   
   const std::deque<ChatEntry>& GetRecentChat();
   void ClearRecentChat();
@@ -82,16 +84,11 @@ struct ChatController {
 
    void SendQueuedMessage();
 
-  struct OutBoundEntry {
-    ChatType type;
-    u8 sound;
-    uint16_t sender;
-    char message[520];
-  };
-
   Time time;
-  std::deque<OutBoundEntry> outbound_msgs;
+  std::deque<ChatEntry> outbound_msgs;
   uint64_t outbound_timestamp = 0;
+  uint64_t last_update_timestamp = 0;
+  int64_t decay = 0;
 
   std::deque<ChatEntry> recent_chat;
   std::size_t entries_read = 0;

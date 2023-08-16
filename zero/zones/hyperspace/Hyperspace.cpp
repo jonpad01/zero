@@ -176,7 +176,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
                     .End()
                 .Selector()
                     .Sequence() // Path to target if they aren't immediately visible.
-                        .InvertChild<VisibilityQueryNode>("nearest_target_position")
+                        .InvertChild<DiameterCastQueryNode>("nearest_target_position")
                         .Child<GoToNode>("nearest_target_position")
                         .End()
                     .Sequence() // Aim at target and shoot while seeking them.
@@ -196,7 +196,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
                 .Child<RandomWaypointNode>("waypoint_position", 15.0f)
                 .Selector()
                     .Sequence()
-                        .InvertChild<VisibilityQueryNode>("waypoint_position")
+                        .InvertChild<DiameterCastQueryNode>("waypoint_position")
                         .Child<GoToNode>("waypoint_position")
                         .End()
                     .Parallel()
@@ -277,14 +277,14 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
                             .Selector()
                                 .Sequence() // Attempt to fire at closest enemy.
                                     .Child<DistanceThresholdNode>("nearest_target_position", 15.0f)
-                                    .Child<VisibilityQueryNode>("nearest_target_position")
+                                    .Child<DiameterCastQueryNode>("nearest_target_position")
                                     .Child<PlayerBoundingBoxQueryNode>("nearest_target", "target_bounds", 12.0f)
                                     .Child<AimNode>("nearest_target", "aim_position")
                                     .Child<MoveRectangleNode>("target_bounds", "aim_position", "target_bounds")
                                     .End()
                                 .Sequence() // Attempt to fire at center if enemy is not visible.
                                     .Child<ClosestTileQueryNode>("levi_aim_points", "closest_levi_aim_point")
-                                    .Child<VisibilityQueryNode>("closest_levi_aim_point")
+                                    .Child<DiameterCastQueryNode>("closest_levi_aim_point")
                                     .Child<RectangleNode>("closest_levi_aim_point", Vector2f(12, 12), "target_bounds")
                                     .Child<VectorNode>("closest_levi_aim_point", "aim_position")
                                     .End()
@@ -317,7 +317,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
                         .Child<ClosestTileQueryNode>("levi_camp_points", "closest_levi_camp_point")
                         .Selector()
                             .Sequence() // Attempt to seek directly to camp point if visible
-                                .Child<VisibilityQueryNode>("closest_levi_camp_point")
+                                .Child<DiameterCastQueryNode>("closest_levi_camp_point")
                                 .Child<SeekNode>("closest_levi_camp_point")
                                 .SuccessChild<FaceNode>("aim_position")
                                 .End()
@@ -332,7 +332,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
                 .Child<RandomWaypointNode>("waypoint_position", 15.0f)
                 .Selector()
                     .Sequence()
-                        .InvertChild<VisibilityQueryNode>("waypoint_position")
+                        .InvertChild<DiameterCastQueryNode>("waypoint_position")
                         .Child<GoToNode>("waypoint_position")
                         .End()
                     .Parallel()

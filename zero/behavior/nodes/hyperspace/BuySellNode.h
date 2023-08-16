@@ -47,7 +47,8 @@ struct BuySellListenNode : public BehaviorNode {
     auto self = ctx.bot->game->player_manager.GetSelf();
 
     int count = bb.ValueOr<int>("transaction_count", 0);
-    uint16_t sender = bb.ValueOr<uint16_t>("transaction_sender_id", 0);
+    //uint16_t sender = bb.ValueOr<uint16_t>("transaction_sender_id", 0);
+    std::string sender = bb.ValueOr<std::string>("transaction_sender", "");
 
     for (const ChatEntry& entry : game->chat.GetRecentChat()) {
       if (entry.type != ChatType::Arena) continue;
@@ -110,7 +111,8 @@ struct ShipStatusListenNode : public BehaviorNode {
     auto self = ctx.bot->game->player_manager.GetSelf();
 
     int line_count = bb.ValueOr<int>("transaction_count", 0);
-    uint16_t sender = bb.ValueOr<uint16_t>("transaction_sender_id", 0);
+   // uint16_t sender = bb.ValueOr<uint16_t>("transaction_sender_id", 0);
+    std::string sender = bb.ValueOr<std::string>("transaction_sender", "");
 
     for (const ChatEntry& entry : game->chat.GetRecentChat()) {
       if (entry.type != ChatType::Arena) continue;

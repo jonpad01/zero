@@ -28,21 +28,20 @@ ChatController::ChatController(PacketDispatcher& dispatcher, Connection& connect
 }
 
 void ChatController::SendMessage(ChatType type, const char* mesg) {
-  OutBoundEntry entry;
+  ChatEntry entry;
 
   strcpy(entry.message, mesg);
-  entry.sender = 0;
   entry.sound = 0x00;
   entry.type = type;
 
   outbound_msgs.emplace_back(entry);
 }
 
-void ChatController::SendPrivateMessage(const char* mesg, u16 pid) {
-  OutBoundEntry entry;
+void ChatController::SendPrivateMessage(const char* mesg, const char* sender) {
+  ChatEntry entry;
 
   strcpy(entry.message, mesg);
-  entry.sender = pid;
+  strcpy(entry.sender, sender);
   entry.sound = 0x00;
   entry.type = ChatType::Private;
 
@@ -50,40 +49,73 @@ void ChatController::SendPrivateMessage(const char* mesg, u16 pid) {
 }
 
 void ChatController::SendMessage(ChatType type, const std::string& mesg) {
-  OutBoundEntry entry;
+  ChatEntry entry;
 
   strcpy(entry.message, mesg.c_str());
-  entry.sender = 0;
   entry.sound = 0x00;
   entry.type = type;
 
   outbound_msgs.emplace_back(entry);
 }
 
-void ChatController::SendPrivateMessage(const std::string& mesg, u16 pid) {
-  OutBoundEntry entry;
+void ChatController::SendPrivateMessage(const std::string& mesg, const std::string& sender) {
+  ChatEntry entry;
 
   strcpy(entry.message, mesg.c_str());
-  entry.sender = pid;
+  strcpy(entry.sender, sender.c_str());
   entry.sound = 0x00;
   entry.type = ChatType::Private;
 
   outbound_msgs.emplace_back(entry);
 }
 
+void ChatController::SendPrivateMessage(const std::string& mesg, uint16_t sender) {
+  ChatEntry entry;
+
+  const Player* player = player_manager.GetPlayerById(sender);
+
+  strcpy(entry.message, mesg.c_str());
+  if (player) strcpy(entry.sender, player->name);
+  entry.sound = 0x00;
+  entry.type = ChatType::Private;
+
+  outbound_msgs.emplace_back(entry);
+ }
+
+void ChatController::SendPrivateMessage(const char* mesg, uint16_t sender) {
+  ChatEntry entry;
+
+  const Player* player = player_manager.GetPlayerById(sender);
+
+  strcpy(entry.message, mesg);
+  if (player) strcpy(entry.sender, player->name);
+  entry.sound = 0x00;
+  entry.type = ChatType::Private;
+
+  outbound_msgs.emplace_back(entry);
+ }
+
 void ChatController::SendQueuedMessage() {
 
-  if (outbound_msgs.empty() || time.GetTime() < outbound_timestamp + 1000) {
+  if (outbound_msgs.empty()) {
     return;
   }
 
-  outbound_timestamp = time.GetTime();
+  //if (time.GetTime() < outbound_timestamp + 1000) {
+  if (decay > 7000) {
+    return;
+  }
 
-  OutBoundEntry msg = outbound_msgs[0];
+  ChatEntry msg = outbound_msgs[0];
   outbound_msgs.pop_front();
 
   uint16_t pid = 0;
-  if (msg.type == ChatType::Private) pid = msg.sender;
+  if (msg.type == ChatType::Private) {
+    const Player* player = player_manager.GetPlayerByName(msg.sender);
+    // scrap this message, the player probably left the arena
+    if (!player) return;
+    pid = player->id;
+  }
 
   u8 data[kMaxPacketSize];
   NetworkBuffer buffer(data, kMaxPacketSize);
@@ -96,6 +128,9 @@ void ChatController::SendQueuedMessage() {
   buffer.WriteString(msg.message, size);
 
   connection.packet_sequencer.SendReliableMessage(connection, buffer.data, buffer.GetSize());
+
+  outbound_timestamp = time.GetTime();
+  decay += 1000;
 }
 
 Player* ChatController::GetBestPlayerNameMatch(char* name, size_t length) {
@@ -142,6 +177,17 @@ inline int GetShipStatusPercent(u32 upgrade, u32 maximum, u32 current) {
 }
 
 void ChatController::Update(float dt) {
+  
+  uint64_t now = time.GetTime();
+  uint64_t diff = now - last_update_timestamp;
+
+  if (diff > 1) {
+   decay -= diff;
+   last_update_timestamp = now;
+  }
+  
+  if (decay < 0) decay = 0;
+
   SendQueuedMessage();
 
   // using a count instead of clear, because new messages can

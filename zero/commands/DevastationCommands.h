@@ -69,18 +69,18 @@ class StartBDCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
     BaseDuelState state = bb.ValueOr<BaseDuelState>("BaseDuelState", BaseDuelState::NotRunning);
     
       if (state == BaseDuelState::Running) {
-      chat.SendPrivateMessage("I am currently running a baseduel game.", player->id);
+      chat.SendPrivateMessage("I am currently running a baseduel game.", sender);
       return;
       } else if (state == BaseDuelState::Paused) {
-      chat.SendPrivateMessage("I am currently paused in the middle of a game.", player->id);
+      chat.SendPrivateMessage("I am currently paused in the middle of a game.", sender);
       return;
       } else if (state == BaseDuelState::Ending) {
-      chat.SendPrivateMessage("I am currently ending a game, please try the command again.", player->id);
+      chat.SendPrivateMessage("I am currently ending a game, please try the command again.", sender);
       return;
       }
 
@@ -108,14 +108,14 @@ class StopBDCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
       auto& bb = bot.execute_ctx.blackboard;
       auto& chat = bot.game->chat;
-      Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+      //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
       BaseDuelState state = bb.ValueOr<BaseDuelState>("BaseDuelState", BaseDuelState::NotRunning);
 
     if (state == BaseDuelState::NotRunning || state == BaseDuelState::Ending) {
-      chat.SendPrivateMessage("I am not running a baseduel game.", player->id);
+      chat.SendPrivateMessage("I am not running a baseduel game.", sender);
     } else if (state != BaseDuelState::Paused) {
-      chat.SendPrivateMessage("You must hold the game first before using this command.", player->id);
+      chat.SendPrivateMessage("You must hold the game first before using this command.", sender);
     } else {
       bb.Set<BaseDuelState>("BaseDuelState", BaseDuelState::Ending);
       std::string msg = "The baseduel game has been stopped. (Command sent by: " + sender + ")";
@@ -145,7 +145,7 @@ class HoldBDCommand : public CommandExecutor {
     BaseDuelState state = bb.ValueOr<BaseDuelState>("BaseDuelState", BaseDuelState::NotRunning);
 
       if (state == BaseDuelState::Paused) {
-        chat.SendPrivateMessage("I am already holding a baseduel game.", player->id);
+      chat.SendPrivateMessage("I am already holding a baseduel game.", sender);
         return;
       } else if (state == BaseDuelState::NotRunning || state == BaseDuelState::Ending) {
         chat.SendPrivateMessage("I am not running a baseduel game.", player->id);

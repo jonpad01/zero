@@ -14,7 +14,7 @@ class HSShipStatusCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
     Ship ship = bot.game->ship_controller.ship;
 
@@ -23,16 +23,16 @@ class HSShipStatusCommand : public CommandExecutor {
       if (num >= 1 && num <= 8) {
         ship = Ship(num - 1);
       } else {
-        SendUsage(chat, player->id);
+        SendUsage(chat, sender);
       }
     }
 
     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::ListItems);
     bb.Set<Ship>("transaction_ship", ship);
-    bb.Set<uint16_t>("transaction_sender_id", player->id);
+    bb.Set<std::string>("transaction_sender", sender);
   }
 
-  void SendUsage(ChatController& chat, uint16_t sender) {
+  void SendUsage(ChatController& chat, const std::string& sender) {
     chat.SendPrivateMessage("Private command only (.shipstatus) (.shipstatus 1-8)", sender);
   }
 
@@ -49,7 +49,7 @@ class HSBuyCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+   // Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
      
     std::vector<std::string> args = SplitString(arg, "|");
     // adding to the item list in case buy was used in a delimiter
@@ -63,7 +63,7 @@ class HSBuyCommand : public CommandExecutor {
         ship = num - 1;
         args.erase(args.begin());
       } else {
-        SendUsage(chat, player->id);
+        SendUsage(chat, sender);
       }
     }
 
@@ -72,13 +72,13 @@ class HSBuyCommand : public CommandExecutor {
      }
 
      bb.Set<std::vector<std::string>>("transaction_buy_list", list);
-     bb.Set<uint16_t>("transaction_sender_id", player->id);
+     bb.Set<std::string>("transaction_sender", sender);
      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Buy);
      bb.Set<int>("transaction_ship", ship);
 
   }
 
-   void SendUsage(ChatController& chat, uint16_t sender) {
+   void SendUsage(ChatController& chat, const std::string& sender) {
      chat.SendPrivateMessage("Example format: .buy 2|close combat|radiating coils", sender);
   }
 
@@ -95,7 +95,7 @@ class HSSellCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
      auto& bb = bot.execute_ctx.blackboard;
      auto& chat = bot.game->chat;
-     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+     //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
      std::vector<std::string> args = SplitString(arg, "|");
     
@@ -108,7 +108,7 @@ class HSSellCommand : public CommandExecutor {
         ship = num - 1;
         args.erase(args.begin());
       } else {
-        SendUsage(chat, player->id);
+        SendUsage(chat, sender);
       }
      }
 
@@ -117,13 +117,13 @@ class HSSellCommand : public CommandExecutor {
      }
   
      bb.Set<std::vector<std::string>>("transaction_sell_list", list);
-     bb.Set<uint16_t>("transaction_sender_id", player->id);
+     bb.Set<std::string>("transaction_sender", sender);
      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Sell);
      bb.Set<int>("transaction_ship", ship);
 
   }
 
-  void SendUsage(ChatController& chat, uint16_t sender) {
+  void SendUsage(ChatController& chat, const std::string& sender) {
      chat.SendPrivateMessage("Example format: .sell 2|close combat|radiating coils", sender);
   }
 
@@ -140,10 +140,10 @@ class HSFlagCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
      auto& bb = bot.execute_ctx.blackboard;
      auto& chat = bot.game->chat;
-     Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    // Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
    
-    chat.SendPrivateMessage("Switching to flagging.", player->id);
+    chat.SendPrivateMessage("Switching to flagging.", sender);
     
     bb.Set<bool>("AllowFlagging", true);
   }
@@ -161,9 +161,9 @@ class HSFlagOffCommand : public CommandExecutor {
   void Execute(CommandSystem& cmd, ZeroBot& bot, const std::string& sender, const std::string& arg) override {
     auto& bb = bot.execute_ctx.blackboard;
     auto& chat = bot.game->chat;
-    Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
+    //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    chat.SendPrivateMessage("I will stop flagging.", player->id);
+    chat.SendPrivateMessage("I will stop flagging.", sender);
     
     bb.Set<bool>("AllowFlagging", false);
   }
