@@ -136,11 +136,13 @@ struct ShipStatusListenNode : public BehaviorNode {
     } else {
       bb.Set<int>("transaction_count", line_count);
     }
+
+    return ExecuteResult::Success;
   }
 };
 
 struct ShipStatusNode : public BehaviorNode {
-  ShipStatusNode(const char* key) : key(key) {}
+  ShipStatusNode(const char* ship_key) : ship_key(ship_key) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
     auto& bot = ctx.bot;
@@ -148,10 +150,10 @@ struct ShipStatusNode : public BehaviorNode {
     auto& game = ctx.bot->game;
     auto self = ctx.bot->game->player_manager.GetSelf();
 
-    int ship = bb.ValueOr<int>(key, self->ship);
+    int ship = bb.ValueOr<int>(ship_key, self->ship);
 
     game->chat.ClearRecentChat();
-    game->chat.SendMessage(ChatType::Public, "?shipstatus " + std::to_string(ship));
+    game->chat.SendMessage(ChatType::Public, "?shipstatus " + std::to_string(ship + 1));
 
     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::ShipStatusListen);
     bb.Set<int>("transaction_count", 0);
@@ -159,7 +161,7 @@ struct ShipStatusNode : public BehaviorNode {
     return ExecuteResult::Success;
   }
 
-  const char* key;
+  const char* ship_key;
 };
 
 struct BuyNode : public BehaviorNode {

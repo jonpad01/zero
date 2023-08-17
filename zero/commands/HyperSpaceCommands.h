@@ -16,19 +16,19 @@ class HSShipStatusCommand : public CommandExecutor {
     auto& chat = bot.game->chat;
     //Player* player = bot.game->player_manager.GetPlayerByName(sender.c_str());
 
-    Ship ship = bot.game->ship_controller.ship;
+    int ship = bot.game->player_manager.GetSelf()->ship;
 
     if (!arg.empty() && isdigit(arg[0])) {
       int num = arg[0] - '0';
       if (num >= 1 && num <= 8) {
-        ship = Ship(num - 1);
+        ship = num - 1;
       } else {
         SendUsage(chat, sender);
       }
     }
 
     bb.Set<ItemTransaction>("transaction_type", ItemTransaction::ListItems);
-    bb.Set<Ship>("transaction_ship", ship);
+    bb.Set("shipstatus_ship", ship);
     bb.Set<std::string>("transaction_sender", sender);
   }
 
@@ -74,7 +74,7 @@ class HSBuyCommand : public CommandExecutor {
      bb.Set<std::vector<std::string>>("transaction_buy_list", list);
      bb.Set<std::string>("transaction_sender", sender);
      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Buy);
-     bb.Set<int>("transaction_ship", ship);
+     bb.Set<int>("request_ship", ship);
 
   }
 
@@ -119,7 +119,7 @@ class HSSellCommand : public CommandExecutor {
      bb.Set<std::vector<std::string>>("transaction_sell_list", list);
      bb.Set<std::string>("transaction_sender", sender);
      bb.Set<ItemTransaction>("transaction_type", ItemTransaction::Sell);
-     bb.Set<int>("transaction_ship", ship);
+     bb.Set<int>("request_ship", ship);
 
   }
 

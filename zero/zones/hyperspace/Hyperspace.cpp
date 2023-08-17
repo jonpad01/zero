@@ -23,6 +23,9 @@
 namespace zero {
 namespace behavior {
 
+const int kTeam90 = 90;
+const int kTeam91 = 91;
+
  // last coord is base 8, its just a coord near buying area
 const std::vector<Vector2f> kFlagRooms = {Vector2f(826, 229), Vector2f(834, 540), Vector2f(745, 828),
                                           Vector2f(489, 832), Vector2f(292, 812), Vector2f(159, 571),
@@ -104,9 +107,9 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
             .Child<ItemTransactionQuery>(ItemTransaction::Buy, "transaction_type")
                 .Sequence()
                     .Selector()
-                        .Child<ShipQueryNode>("transaction_ship")
+                        .Child<ShipQueryNode>("request_ship")
                         .FailChild<SetEnergyNode>(100)
-                        .FailChild<ShipRequestNode>("transaction_ship")
+                        .FailChild<ShipRequestNode>("request_ship")
                     .End()
                     .Selector()
                         .Child<TileQueryNode>(kTileSafeId) // success = on safe tile
@@ -120,9 +123,9 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
             .Child<ItemTransactionQuery>(ItemTransaction::Sell, "transaction_type")
                  .Sequence()
                     .Selector()
-                        .Child<ShipQueryNode>("transaction_ship")
+                        .Child<ShipQueryNode>("request_ship")
                         .FailChild<SetEnergyNode>(100)
-                        .FailChild<ShipRequestNode>("transaction_ship")
+                        .FailChild<ShipRequestNode>("request_ship")
                     .End()
                     .Selector()
                         .Child<TileQueryNode>(kTileSafeId) // success = on safe tile
@@ -152,7 +155,7 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
          .End()
          .Sequence()
             .Child<ItemTransactionQuery>(ItemTransaction::ListItems, "transaction_type")
-            .Child<ShipStatusNode>("transaction_ship")
+            .Child<ShipStatusNode>("shipstatus_ship")
          .End()
          .Sequence()
             .Child<ItemTransactionQuery>(ItemTransaction::BuySellListen, "transaction_type")
@@ -168,10 +171,9 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
   return builder.Build();
 }
 
-std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
+std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceRoot() {
   using namespace behavior;
   BehaviorBuilder builder;
-
   // clang-format off
   builder
     .Selector()
@@ -181,7 +183,12 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
         .End()
     .End();
   // clang-format on
+  return builder.Build();
+}
 
+std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator() {
+  using namespace behavior;
+  BehaviorBuilder builder;
   return builder.Build();
 }
 
@@ -195,10 +202,10 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
   // clang-format off
   builder
     .Selector()
-        .Sequence() // Enter the specified ship if not already in it.
-            .InvertChild<ShipQueryNode>("request_ship")
-            .Child<ShipRequestNode>("request_ship")
-            .End()
+       // .Sequence() // Enter the specified ship if not already in it.
+        //    .InvertChild<ShipQueryNode>("request_ship")
+       //     .Child<ShipRequestNode>("request_ship")
+       //     .End()
         .Sequence() // Warp back to center.
             .InvertChild<RegionContainQueryNode>(center)
             .Child<WarpNode>()
@@ -399,9 +406,6 @@ void HyperspaceBuilder::Initialize(behavior::ExecuteContext& ctx) {
   ctx.blackboard.Set("levi_camp_points", kLeviCampPoints);
   ctx.blackboard.Set("levi_aim_points", kLeviAimPoints);
 
-  ctx.blackboard.Set("team_zero_freq", 90);
-  ctx.blackboard.Set("team_one_freq", 91);
-
   std::vector<path::Path> base_paths;
   std::vector<HSAnchorPoints> anchor_points;
 
@@ -456,6 +460,10 @@ std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetTree(behavior::Exe
 
   return shipBuilders[ship]();
   
+}
+
+std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetRoot(behavior::ExecuteContext& ctx) {
+    return BuildHyperspaceRoot();
 }
 
 }  // namespace zero

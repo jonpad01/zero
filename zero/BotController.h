@@ -23,12 +23,10 @@ struct BotController {
   std::unique_ptr<path::Pathfinder> pathfinder;
   std::unique_ptr<RegionRegistry> region_registry;
   InputState* input;
-
+  path::Path current_path;
   Steering steering;
   Actuator actuator;
-  path::Path current_path;
-  float radius = 0.0f;
-  bool first_run = true;
+
   Zone zone;
   Time time;
 
@@ -42,10 +40,13 @@ struct BotController {
 
  private:
   //typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(behavior::ExecuteContext& ctx);
+  
+  float radius = 0.0f;
+  bool first_run = true;
 
-  std::unique_ptr<behavior::ZoneBuilder> zoneBuilder = nullptr;
-  std::unique_ptr<behavior::BehaviorNode> behavior_tree = nullptr;
-
+  std::unique_ptr<behavior::ZoneBuilder> zone_builder = nullptr;
+  std::unique_ptr<behavior::BehaviorNode> tree = nullptr;
+  std::unique_ptr<behavior::BehaviorNode> root = nullptr;
 };
 
 }  // namespace zero

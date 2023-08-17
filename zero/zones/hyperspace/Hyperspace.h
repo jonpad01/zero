@@ -19,6 +19,7 @@ class HyperspaceBuilder : public ZoneBuilder {
 
   void Initialize(behavior::ExecuteContext& ctx) override;
   std::unique_ptr<behavior::BehaviorNode> GetTree(behavior::ExecuteContext& ctx) override;
+  std::unique_ptr<behavior::BehaviorNode> GetRoot(behavior::ExecuteContext& ctx) override;
   bool ShouldRebuildTree(behavior::ExecuteContext& ctx) override;
  private:
 

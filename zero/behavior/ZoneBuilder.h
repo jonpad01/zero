@@ -12,6 +12,7 @@ class ZoneBuilder {
 
   virtual void Initialize(behavior::ExecuteContext& ctx) = 0;
   virtual std::unique_ptr<behavior::BehaviorNode> GetTree(behavior::ExecuteContext& ctx) = 0;
+  virtual std::unique_ptr<behavior::BehaviorNode> GetRoot(behavior::ExecuteContext& ctx) = 0;
   virtual bool ShouldRebuildTree(behavior::ExecuteContext& ctx) = 0;
 };
 

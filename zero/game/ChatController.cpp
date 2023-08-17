@@ -100,7 +100,7 @@ void ChatController::SendQueuedMessage() {
   //
   // This should be set to whatever the zone config is set to.
   // TODO: Set different value based on joined server.
-  constexpr u32 kFloodLimit = 7;
+  constexpr u32 kFloodLimit = 4;
 
   while (!outbound_msgs.empty()) {
     Tick current_tick = GetCurrentTick();

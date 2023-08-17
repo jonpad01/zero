@@ -19,8 +19,6 @@
 
 namespace zero {
 
-//constexpr int kShip = 0;
-
 
 // ctx.bot can't be called here because it hasnt been assigned yet
 BotController::BotController(Zone zone) { 
@@ -53,16 +51,24 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
     ctx.blackboard.Set<int>("request_ship", (rand() % 8));
     SetZoneBuilder(ctx);
     // if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
-    if (zoneBuilder) behavior_tree = zoneBuilder->GetTree(ctx);
+    if (zone_builder) {
+      root = zone_builder->GetRoot(ctx);
+      tree = zone_builder->GetTree(ctx);
+    }
     first_run = false;
   }
   
   // this call allows bot to switch trees
-  if (zoneBuilder->ShouldRebuildTree(ctx)) behavior_tree = zoneBuilder->GetTree(ctx);
+  if (zone_builder->ShouldRebuildTree(ctx)) tree = zone_builder->GetTree(ctx);
+
   steering.Reset();
 
-  if (behavior_tree) {
-    behavior_tree->Execute(ctx);
+   if (root) {
+    root->Execute(ctx);
+   }
+
+  if (tree) {
+    tree->Execute(ctx);
   }
 
   actuator.Update(game, input, steering.force, steering.rotation);
@@ -73,7 +79,7 @@ void BotController::SetZoneBuilder(behavior::ExecuteContext& ctx) {
   switch (zone) {
     case Zone::Hyperspace: {
       //zoneBuilder = GetHyperSpaceBehaviorTree;
-      zoneBuilder = std::make_unique<behavior::HyperspaceBuilder>(ctx);
+      zone_builder = std::make_unique<behavior::HyperspaceBuilder>(ctx);
        break;
     }
     default: {
