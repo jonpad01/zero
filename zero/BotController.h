@@ -5,6 +5,7 @@
 #include <zero/game/Game.h>
 #include <zero/path/Pathfinder.h>
 #include <zero/Enums.h>
+#include <zero/behavior/ZoneBuilder.h>
 
 #include <memory>
 
@@ -40,9 +41,9 @@ struct BotController {
   void SortPlayers(behavior::ExecuteContext& ctx);
 
  private:
-  typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(behavior::ExecuteContext& ctx);
+  //typedef std::unique_ptr<behavior::BehaviorNode> (*ZoneBuilder)(behavior::ExecuteContext& ctx);
 
-  ZoneBuilder zoneBuilder = nullptr;
+  std::unique_ptr<behavior::ZoneBuilder> zoneBuilder = nullptr;
   std::unique_ptr<behavior::BehaviorNode> behavior_tree = nullptr;
 
   uint64_t message_sender_timestamp = 0;

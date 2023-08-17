@@ -59,6 +59,7 @@
   <ItemGroup>
     <ClInclude Include="zero\behavior\nodes\hyperspace\BuySellNode.h" />
     <ClInclude Include="zero\behavior\nodes\SetEnergyNode.h" />
+    <ClInclude Include="zero\behavior\ZoneBuilder.h" />
     <ClInclude Include="zero\commands\SayCommand.h" />
     <ClInclude Include="zero\Enums.h" />
     <ClInclude Include="zero\Actuator.h" />

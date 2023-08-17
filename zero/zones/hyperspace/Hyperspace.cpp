@@ -20,6 +20,7 @@
 #include <zero/behavior/nodes/SetEnergyNode.h>
 
 namespace zero {
+namespace behavior {
 
 // reference coord for region registry
 const MapCoord kHyperTunnelCoord = MapCoord(16, 16);
@@ -353,7 +354,7 @@ std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::Exec
 
   auto& bb = ctx.blackboard;
 
-  ItemTransaction transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None); 
+  ItemTransaction transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None);
 
   if (transaction != ItemTransaction::None) {
     return BuildHyperspaceBuySell();
@@ -377,4 +378,46 @@ std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::Exec
   return shipBuilders[ship]();
 }
 
+bool HyperspaceBuilder::ShouldRebuildTree(behavior::ExecuteContext& ctx) {
+  auto& bb = ctx.blackboard;
+  
+  ItemTransaction transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None);
+  uint8_t ship = ctx.bot->game->player_manager.GetSelf()->ship;
+
+  if (this->transaction == transaction && this->ship == ship) return false;
+
+  return true;
+}
+
+std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetNewZoneTree(behavior::ExecuteContext& ctx) {
+  
+  typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
+
+  auto& bb = ctx.blackboard;
+
+  transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None);
+  ship = ctx.bot->game->player_manager.GetSelf()->ship;
+
+  if (transaction != ItemTransaction::None) {
+    return BuildHyperspaceBuySell();
+  }
+
+  // clang-format off
+  ShipBuilder shipBuilders[] = {
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceLeviCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceWarbirdCenter,
+    BuildHyperspaceSpectator,
+  };
+
+  return shipBuilders[ship]();
+  
+}
+
 }  // namespace zero
+}

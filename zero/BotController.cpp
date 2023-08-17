@@ -36,7 +36,8 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
   if (this->radius == 0.0f) {
     ctx.blackboard.Set<int>("request_ship", (rand() % 8));
     SetZoneBuilder();
-    if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
+    //if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
+    if (zoneBuilder) behavior_tree = zoneBuilder->GetNewZoneTree(ctx);
   }
 
   uint8_t ship = game.player_manager.GetSelf()->ship;
@@ -54,17 +55,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
     pathfinder = std::make_unique<path::Pathfinder>(std::move(processor), *region_registry);
     pathfinder->CreateMapWeights(game.GetMap(), radius);
 
-    //execute_ctx.blackboard.Set("request_ship", kShip);
     ctx.blackboard.Set("leash_distance", 15.0f);
-
-    std::vector<Vector2f> waypoints{
-        Vector2f(440, 460),
-        Vector2f(565, 465),
-        Vector2f(570, 565),
-        Vector2f(415, 590),
-    };
-
-    ctx.blackboard.Set("waypoints", waypoints);
 
     std::vector<Vector2f> center_warpers{
         Vector2f(500, 500),
@@ -97,7 +88,7 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
   SendMessages(game);
   
   // call the zone builder every update so it can switch trees
-  if (zoneBuilder) behavior_tree = zoneBuilder(ctx);
+  if (zoneBuilder->ShouldRebuildTree(ctx)) behavior_tree = zoneBuilder->GetNewZoneTree(ctx);
   steering.Reset();
 
   if (behavior_tree) {
@@ -111,11 +102,12 @@ void BotController::SetZoneBuilder() {
   
   switch (zone) {
     case Zone::Hyperspace: {
-      zoneBuilder = GetHyperSpaceBehaviorTree;
+      //zoneBuilder = GetHyperSpaceBehaviorTree;
+      zoneBuilder = std::make_unique<behavior::HyperspaceBuilder>();
        break;
     }
     default: {
-       zoneBuilder = nullptr;
+       //zoneBuilder = nullptr;
     }
   }
 }
