@@ -57,6 +57,7 @@
     <ClCompile Include="zero\zones\hyperspace\Hyperspace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="zero\PubGame.h" />
     <ClInclude Include="zero\behavior\nodes\hyperspace\BuySellNode.h" />
     <ClInclude Include="zero\behavior\nodes\SetEnergyNode.h" />
     <ClInclude Include="zero\behavior\ZoneBuilder.h" />

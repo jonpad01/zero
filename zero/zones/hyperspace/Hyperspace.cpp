@@ -18,22 +18,56 @@
 #include <zero/behavior/nodes/WaypointNode.h>
 #include <zero/behavior/nodes/hyperspace/BuySellNode.h>
 #include <zero/behavior/nodes/SetEnergyNode.h>
+#include <zero/PubGame.h>
 
 namespace zero {
 namespace behavior {
 
-// reference coord for region registry
-const MapCoord kHyperTunnelCoord = MapCoord(16, 16);
-// gates from center to tunnel
-const std::vector<MapCoord> kCenterGates = {MapCoord(388, 395), MapCoord(572, 677)};
-// gates to go back to center
-const std::vector<MapCoord> kTunnelToCenterGates = {MapCoord(62, 351), MapCoord(961, 350)};
-// gates to 7 bases plus top area in order
-const std::vector<MapCoord> kBaseTunnelGates = {MapCoord(961, 63),  MapCoord(960, 673), MapCoord(960, 960),
-                                                MapCoord(512, 959), MapCoord(64, 960),  MapCoord(64, 672),
-                                                MapCoord(65, 65),   MapCoord(512, 64)};
+ // last coord is base 8, its just a coord near buying area
+const std::vector<Vector2f> kFlagRooms = {Vector2f(826, 229), Vector2f(834, 540), Vector2f(745, 828),
+                                          Vector2f(489, 832), Vector2f(292, 812), Vector2f(159, 571),
+                                          Vector2f(205, 204), Vector2f(375, 235)};
 
+// reference coord for region registry
+const Vector2f kHyperTunnelCoord = Vector2f(16, 16);
+// ammo depot
 const Vector2f kAmmoDepot = Vector2f(590, 349);
+// gates from center to tunnel
+const std::vector<Vector2f> kCenterToTunnelGates = {Vector2f(388, 395), Vector2f(572, 677)};
+// gates to go back to center
+const std::vector<Vector2f> kTunnelToCenterGates = {Vector2f(62, 351), Vector2f(961, 350)};
+// gates to 7 bases plus top area in order
+const std::vector<Vector2f> kTunnelToBaseGates = {Vector2f(961, 63),  Vector2f(960, 673), Vector2f(960, 960),
+                                                  Vector2f(512, 959), Vector2f(64, 960),  Vector2f(64, 672),
+                                                  Vector2f(65, 65),   Vector2f(512, 64)};
+
+const std::vector<Vector2f> kBaseToTunnelGates = {Vector2f(888, 357), Vector2f(771, 501), Vector2f(671, 852),
+                                                  Vector2f(608, 756), Vector2f(150, 894), Vector2f(261, 459),
+                                                  Vector2f(136, 390), Vector2f(618, 252)};
+
+const std::vector<Vector2f> kCenterWarpers{
+    Vector2f(500, 500),
+    Vector2f(523, 500),
+    Vector2f(523, 523),
+    Vector2f(500, 523),
+};
+
+const std::vector<Vector2f> kLeviCampPoints{
+    Vector2f(630, 475),
+    Vector2f(600, 600),
+    Vector2f(420, 605),
+    Vector2f(410, 450),
+};
+
+const std::vector<Vector2f> kLeviAimPoints{
+    Vector2f(512, 480),  // North
+    Vector2f(543, 511),  // East
+    Vector2f(512, 543),  // South
+    Vector2f(480, 511),  // West
+};
+
+
+
 
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
   using namespace behavior;
@@ -349,33 +383,36 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceLeviCenter() {
   return builder.Build();
 }
 
-std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::ExecuteContext& ctx) {
-  typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
+HyperspaceBuilder::HyperspaceBuilder(behavior::ExecuteContext& ctx) {
+  Initialize(ctx);
+}
 
-  auto& bb = ctx.blackboard;
+void HyperspaceBuilder::Initialize(behavior::ExecuteContext& ctx) {
 
-  ItemTransaction transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None);
+  auto& pathfinder = ctx.bot->bot_controller->pathfinder;
+  auto& map = ctx.bot->game->GetMap();
+  ship = ctx.bot->game->player_manager.GetSelf()->ship;
+  float radius = ctx.bot->game->connection.settings.ShipSettings[ship].GetRadius();
+ 
+  ctx.blackboard.Set("leash_distance", 15.0f);
+  ctx.blackboard.Set("center_warpers", kCenterWarpers);
+  ctx.blackboard.Set("levi_camp_points", kLeviCampPoints);
+  ctx.blackboard.Set("levi_aim_points", kLeviAimPoints);
 
-  if (transaction != ItemTransaction::None) {
-    return BuildHyperspaceBuySell();
+  ctx.blackboard.Set("team_zero_freq", 90);
+  ctx.blackboard.Set("team_one_freq", 91);
+
+  std::vector<path::Path> base_paths;
+  std::vector<HSAnchorPoints> anchor_points;
+
+  for (std::size_t i = 0; i < kFlagRooms.size(); i++) {
+    base_paths.emplace_back(pathfinder->FindPath(map, kBaseToTunnelGates[i], kFlagRooms[i], radius));
+    HSAnchorPoints anchor_pair(kFlagRooms[i], kBaseToTunnelGates[i]);
+    anchor_points.emplace_back(anchor_pair);
   }
 
-  uint8_t ship = ctx.bot->game->player_manager.GetSelf()->ship;
-
-  // clang-format off
-  ShipBuilder shipBuilders[] = {
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceLeviCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceSpectator,
-  };
-
-  return shipBuilders[ship]();
+  ctx.blackboard.Set("base_paths", base_paths);
+  ctx.blackboard.Set("anchor_points", anchor_points);
 }
 
 bool HyperspaceBuilder::ShouldRebuildTree(behavior::ExecuteContext& ctx) {
@@ -389,11 +426,13 @@ bool HyperspaceBuilder::ShouldRebuildTree(behavior::ExecuteContext& ctx) {
   return true;
 }
 
-std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetNewZoneTree(behavior::ExecuteContext& ctx) {
+std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetTree(behavior::ExecuteContext& ctx) {
   
   typedef std::unique_ptr<behavior::BehaviorNode> (*ShipBuilder)();
 
   auto& bb = ctx.blackboard;
+
+
 
   transaction = bb.ValueOr<ItemTransaction>("transaction_type", ItemTransaction::None);
   ship = ctx.bot->game->player_manager.GetSelf()->ship;

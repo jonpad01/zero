@@ -14,7 +14,11 @@ struct ExecuteContext;
 
 class HyperspaceBuilder : public ZoneBuilder {
  public:
-  std::unique_ptr<behavior::BehaviorNode> GetNewZoneTree(behavior::ExecuteContext& ctx) override;
+
+  HyperspaceBuilder(behavior::ExecuteContext& ctx);
+
+  void Initialize(behavior::ExecuteContext& ctx) override;
+  std::unique_ptr<behavior::BehaviorNode> GetTree(behavior::ExecuteContext& ctx) override;
   bool ShouldRebuildTree(behavior::ExecuteContext& ctx) override;
  private:
 
@@ -22,7 +26,7 @@ class HyperspaceBuilder : public ZoneBuilder {
   int ship = 0;
 };
 
-std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::ExecuteContext& ctx);
+//std::unique_ptr<behavior::BehaviorNode> GetHyperSpaceBehaviorTree(behavior::ExecuteContext& ctx);
 
 // std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceSpectator()
 //     std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter();
