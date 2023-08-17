@@ -18,6 +18,7 @@
 #include <zero/behavior/nodes/WaypointNode.h>
 #include <zero/behavior/nodes/hyperspace/BuySellNode.h>
 #include <zero/behavior/nodes/SetEnergyNode.h>
+#include <zero/behavior/nodes/PowerBallNode.h>
 #include <zero/PubGame.h>
 
 namespace zero {
@@ -25,6 +26,8 @@ namespace behavior {
 
 const int kTeam90 = 90;
 const int kTeam91 = 91;
+
+const Vector2f kPowerBallGoal(Vector2f(512, 328));
 
  // last coord is base 8, its just a coord near buying area
 const std::vector<Vector2f> kFlagRooms = {Vector2f(826, 229), Vector2f(834, 540), Vector2f(745, 828),
@@ -171,6 +174,47 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceBuySell() {
   return builder.Build();
 }
 
+std::unique_ptr<behavior::BehaviorNode> BuildHyperspacePowerBaller() {
+  using namespace behavior;
+  BehaviorBuilder builder;
+
+  // clang-format off
+  builder
+    .Selector()
+        .FailChild<SetClosestPowerBallNode>("powerball_position")
+        .Selector()
+            .Sequence()
+                .Child<HoldingPowerBallQueryNode>()
+                .Selector()
+                    .Sequence()
+                      .InvertChild<DiameterCastQueryNode>("powerball_goal")
+                      .Child<GoToNode>("powerball_goal")
+                    .End()
+                    .Parallel()
+                        .Child<FaceNode>("powerball_goal")
+                        .Child<ArriveNode>("powerball_goal", 1.0f)
+                    .End()
+                .End()
+            .End()
+            .Selector()
+                .Sequence()
+                    .InvertChild<DiameterCastQueryNode>("powerball_position")
+                    .Child<GoToNode>("powerball_position")
+                .End()
+                .Parallel()
+                     .Child<FaceNode>("powerball_position")
+                     .Child<ArriveNode>("powerball_position", 1.0f)
+                .End()
+             .End()
+        .End()
+    .End();
+  // clang-format on
+
+
+
+  return builder.Build();
+}
+
 std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceRoot() {
   using namespace behavior;
   BehaviorBuilder builder;
@@ -202,10 +246,6 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
   // clang-format off
   builder
     .Selector()
-       // .Sequence() // Enter the specified ship if not already in it.
-        //    .InvertChild<ShipQueryNode>("request_ship")
-       //     .Child<ShipRequestNode>("request_ship")
-       //     .End()
         .Sequence() // Warp back to center.
             .InvertChild<RegionContainQueryNode>(center)
             .Child<WarpNode>()
@@ -405,6 +445,7 @@ void HyperspaceBuilder::Initialize(behavior::ExecuteContext& ctx) {
   ctx.blackboard.Set("center_warpers", kCenterWarpers);
   ctx.blackboard.Set("levi_camp_points", kLeviCampPoints);
   ctx.blackboard.Set("levi_aim_points", kLeviAimPoints);
+  ctx.blackboard.Set("powerball_goal", kPowerBallGoal);
 
   std::vector<path::Path> base_paths;
   std::vector<HSAnchorPoints> anchor_points;
@@ -454,7 +495,7 @@ std::unique_ptr<behavior::BehaviorNode> HyperspaceBuilder::GetTree(behavior::Exe
     BuildHyperspaceWarbirdCenter,
     BuildHyperspaceWarbirdCenter,
     BuildHyperspaceWarbirdCenter,
-    BuildHyperspaceWarbirdCenter,
+    BuildHyperspacePowerBaller,
     BuildHyperspaceSpectator,
   };
 
