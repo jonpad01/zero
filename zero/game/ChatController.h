@@ -86,9 +86,11 @@ struct ChatController {
 
   Time time;
   std::deque<ChatEntry> outbound_msgs;
-  uint64_t outbound_timestamp = 0;
-  uint64_t last_update_timestamp = 0;
-  int64_t decay = 0;
+  //uint64_t outbound_timestamp = 0;
+  //uint64_t last_update_timestamp = 0;
+  //int64_t decay = 0;
+  u32 sent_message_count = 0;
+  u32 last_check_tick = 0;
 
   std::deque<ChatEntry> recent_chat;
   std::size_t entries_read = 0;
