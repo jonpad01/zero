@@ -33,7 +33,7 @@ inline void SimulateAxis(Powerball& ball, Map& map, u32* pos, s16* vel) {
   }
 }
 
-inline Vector2f GetBallPosition(PlayerManager& player_manager, Powerball& ball, u64 microtick) {
+Vector2f Soccer::GetBallPosition(Powerball& ball, u64 microtick) const {
   if (ball.state == BallState::Carried) {
     Player* carrier = player_manager.GetPlayerById(ball.carrier_id);
 
@@ -91,7 +91,7 @@ void Soccer::Update(float dt) {
 
         if (has_timer && carry_timer < 0) {
           float speed = connection.settings.ShipSettings[self->ship].SoccerBallSpeed / 10.0f / 16.0f;
-          Vector2f position = GetBallPosition(player_manager, *ball, microtick);
+          Vector2f position = GetBallPosition(*ball, microtick);
           Vector2f heading = OrientationToHeading((u8)(self->orientation * 40.0f));
           Vector2f velocity = self->velocity - Vector2f(heading) * speed;
 
@@ -161,7 +161,7 @@ bool Soccer::FireBall(BallFireMethod method) {
   Powerball* ball = balls + carry_id;
 
   float speed = connection.settings.ShipSettings[self->ship].SoccerBallSpeed / 10.0f / 16.0f;
-  Vector2f position = GetBallPosition(player_manager, *ball, GetMicrosecondTick());
+  Vector2f position = GetBallPosition(*ball, GetMicrosecondTick());
   Vector2f heading = OrientationToHeading((u8)(self->orientation * 40.0f));
   Vector2f velocity = self->velocity + Vector2f(heading) * speed;
 
