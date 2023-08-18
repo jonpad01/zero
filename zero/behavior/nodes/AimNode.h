@@ -89,8 +89,8 @@ struct ShotVelocityQueryNode : public BehaviorNode {
   WeaponType weapon_type;
 };
 
-struct AimNode : public BehaviorNode {
-  AimNode(const char* target_player_key, const char* position_key)
+struct AimAtPlayerNode : public BehaviorNode {
+  AimAtPlayerNode(const char* target_player_key, const char* position_key)
       : target_player_key(target_player_key), position_key(position_key) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
@@ -104,6 +104,7 @@ struct AimNode : public BehaviorNode {
 
     Player* target = opt_target.value();
     Vector2f aimshot = CalculateShot(self->position, target->position, self->velocity, target->velocity, weapon_speed);
+    
 
     // Set the aimshot directly to the player position if the calculated position was way off.
     if (aimshot.DistanceSq(target->position) > 20.0f * 20.0f) {
@@ -116,6 +117,36 @@ struct AimNode : public BehaviorNode {
   }
 
   const char* target_player_key;
+  const char* position_key;
+};
+
+struct AimAtPositionNode : public BehaviorNode {
+  AimAtPositionNode(const char* target_position_key, const char* position_key)
+      : target_position_key(target_position_key), position_key(position_key) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override {
+    auto self = ctx.bot->game->player_manager.GetSelf();
+    if (!self) return ExecuteResult::Failure;
+
+    auto opt_target = ctx.blackboard.Value<Vector2f>(target_position_key);
+    if (!opt_target.has_value()) return ExecuteResult::Failure;
+
+    float weapon_speed = ctx.bot->game->connection.settings.ShipSettings[self->ship].BulletSpeed / 16.0f / 10.0f;
+
+    Vector2f target = opt_target.value();
+    Vector2f aimshot = CalculateShot(self->position, target, self->velocity, Vector2f(0.0f, 0.0f), weapon_speed);
+
+    // Set the aimshot directly to the player position if the calculated position was way off.
+    if (aimshot.DistanceSq(target) > 20.0f * 20.0f) {
+      aimshot = target;
+    }
+
+    ctx.blackboard.Set(position_key, aimshot);
+
+    return ExecuteResult::Success;
+  }
+
+  const char* target_position_key;
   const char* position_key;
 };
 
