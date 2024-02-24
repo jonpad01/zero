@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
   g_Bot = &bot;
 
   if (!bot.Initialize(argv[1], argv[2])) {
-    // if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
+ //    if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
     return 1;
   }
 

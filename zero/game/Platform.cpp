@@ -169,7 +169,7 @@ void PasteClipboard(char* dest, size_t available_size) {
     CloseClipboard();
   }
 }
-
+// 0xFFFFFFFF will lock out the client with a ban message for 2014;
 unsigned int GetMachineId() {
   char file_system_name[64];
   DWORD file_system_flags;
@@ -177,20 +177,31 @@ unsigned int GetMachineId() {
   DWORD volume_serial_number;
   char volume_name[256];
   char windows_directory[256];
+  HW_PROFILE_INFO profile_info = {};
+
+  if (GetCurrentHwProfileA(&profile_info)) {
+    auto guid = profile_info.szHwProfileGuid;
+
+    u32 machine_id = strtol(guid + HW_PROFILE_GUIDLEN - 10, nullptr, 16);
+
+    if (machine_id != 0 && machine_id != 0xFFFFFFFF) {
+      return machine_id;
+    }
+  }
 
   BOOL result = GetVolumeInformationA("c:\\", volume_name, 256, &volume_serial_number, &max_component_size,
                                       &file_system_flags, file_system_name, 64);
-
-  if (result) {
+  
+  if (result && volume_serial_number != 0xFFFFFFFF && volume_serial_number != 0) {
     return volume_serial_number;
   }
-
+ 
   GetWindowsDirectoryA(windows_directory, 256);
 
   result = GetVolumeInformationA(windows_directory, volume_name, 256, &volume_serial_number, &max_component_size,
                                  &file_system_flags, file_system_name, 64);
 
-  if (result) {
+  if (result && volume_serial_number != 0xFFFFFFFF && volume_serial_number != 0) {
     return volume_serial_number;
   }
 
