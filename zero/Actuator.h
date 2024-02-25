@@ -4,6 +4,9 @@
 
 namespace zero {
 
+    const float ROTATION_FREE_PLAY = 0.80f;
+    const float STEERING_FREE_PLAY = 41.0f / 42.0f;
+
 // Converts a steering force into actual key presses
 struct Actuator {
   void Update(Game& game, InputState& input, const Vector2f& force, float rotation) {
@@ -35,7 +38,7 @@ struct Actuator {
     bool behind = force.Dot(heading) < 0;
     bool leftside = steering_direction.Dot(perp) < 0;
 
-    if (steering_direction.Dot(rotate_target) < 0.75) {
+    if (steering_direction.Dot(rotate_target) < ROTATION_FREE_PLAY) {
       float rotation = 0.1f;
       int sign = leftside ? 1 : -1;
 
@@ -56,7 +59,7 @@ struct Actuator {
       }
     }
 
-    if (heading.Dot(steering_direction) < 0.996f) {
+    if (heading.Dot(steering_direction) < STEERING_FREE_PLAY) {
       input.SetAction(InputAction::Right, clockwise);
       input.SetAction(InputAction::Left, !clockwise);
     }

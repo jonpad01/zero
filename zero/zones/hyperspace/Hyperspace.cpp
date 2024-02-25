@@ -243,35 +243,96 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
   const Vector2f center(512, 512);
 
   // clang-format off
+
+  builder
+    .Selector() // fight or patrol
+         .Sequence() // Warp back to center.
+            .InvertChild<RegionContainQueryNode>(center)
+            .Child<WarpNode>()
+        .End() // selector
+        .Sequence() // find target
+                .Child<NearestTargetNode>("nearest_target")
+                .Child<PlayerPositionQueryNode>("self_position")
+                .Child<PlayerPositionQueryNode>("nearest_target", "nearest_target_position")                
+                .Selector() 
+                    .Sequence() // Path to target if they aren't immediately visible.
+                        .Child<DiameterCastQueryNode>("nearest_target_position")
+                        .Parallel()    
+                            .Child<AimAtPlayerNode>("nearest_target", "aimshot")
+                            .Child<CalculateShotSuccessQueryNode>("nearest_target")
+                            .Child<PlayerBoundingBoxQueryNode>("nearest_target", "target_bounds", 2.5f)
+                            .Child<MoveRectangleNode>("target_bounds", "aimshot", "target_bounds")
+                            .Child<ShotVelocityQueryNode>(WeaponType::Bullet, "shot_velocity")
+                            .Child<RayNode>("self_position", "shot_velocity", "shot_ray")
+                            .Child<FaceNode>("aimshot")
+                            .Child<SeekNode>("aimshot", "leash_distance")
+                            .Sequence()           
+                                .Child<RayRectangleInterceptNode>("shot_ray", "target_bounds")
+                                .InvertChild<TileQueryNode>(kTileSafeId)
+                                .Child<InputActionNode>(InputAction::Bullet)
+                            .End() // sequence
+                        .End() // parallel
+                    .End() // sequence
+                    .Child<GoToNode>("nearest_target_position")
+                .End() // selector
+        .End() // sequence
+        .Sequence() // Follow set waypoints.
+            .Child<RandomWaypointNode>("waypoint_position", 15.0f)
+            .Selector()
+                 .Sequence()
+                     .InvertChild<DiameterCastQueryNode>("waypoint_position")
+                     .Child<GoToNode>("waypoint_position")
+                 .End()  // sequence
+                 .Parallel()
+                    .Child<FaceNode>("waypoint_position")
+                    .Child<ArriveNode>("waypoint_position", 1.25f)
+                 .End() // parallel
+            .End()  // selector
+        .End() // sequence
+    .End(); // selector
+        
+
+
+  #if 0
   builder
     .Selector()
         .Sequence() // Warp back to center.
             .InvertChild<RegionContainQueryNode>(center)
             .Child<WarpNode>()
-            .End()
+        .End()
         .Selector() // Choose to fight the player or follow waypoints.
             .Sequence() // Find nearest target and either path to them or seek them directly.
                 .Sequence()
                     .Child<NearestTargetNode>("nearest_target")
-                    .Child<PlayerPositionQueryNode>("nearest_target", "nearest_target_position")
-                    .End()
+                    .Child<PlayerPositionQueryNode>("self_position")
+                    .Child<PlayerPositionQueryNode>("nearest_target", "nearest_target_position")                
+                .End()
                 .Selector()
                     .Sequence() // Path to target if they aren't immediately visible.
                         .InvertChild<DiameterCastQueryNode>("nearest_target_position")
                         .Child<GoToNode>("nearest_target_position")
-                        .End()
-                    .Sequence() // Aim at target and shoot while seeking them.
-                        .Child<AimAtPlayerNode>("nearest_target", "aimshot")
+                    .End()
+                    .Sequence() // Aim at target and shoot while seeking them.                     
                         .Parallel()
+                            .Child<AimAtPlayerNode>("nearest_target", "aimshot")
                             .Child<FaceNode>("aimshot")
                             .Child<SeekNode>("aimshot", "leash_distance")
-                            .Sequence()
+                            .Sequence()      
+                                .Child<CalculateShotSuccessQueryNode>("nearest_target")
+                                .Child<PlayerBoundingBoxQueryNode>("nearest_target", "target_bounds", 1.5f)
+                                .Child<MoveRectangleNode>("target_bounds", "aimshot", "target_bounds")
+                                .Child<ShotVelocityQueryNode>(WeaponType::Bullet, "shot_velocity")
+                                .Child<RayNode>("self_position", "shot_velocity", "shot_ray")
+                                .Child<RayRectangleInterceptNode>("shot_ray", "target_bounds")
                                 .InvertChild<TileQueryNode>(kTileSafeId)
                                 .Child<InputActionNode>(InputAction::Bullet)
-                                .End()
-                            .End()
-                        .End()
-                    .End()
+                             .End()
+                          .End()
+                     .End()
+                     //.Sequence()
+                     //     .Child<FakeSuccessNode>() // cheater method to not fall back into patrolling
+                     //.End()
+                .End()
                 .End()
             .Sequence() // Follow set waypoints.
                 .Child<RandomWaypointNode>("waypoint_position", 15.0f)
@@ -288,6 +349,8 @@ std::unique_ptr<behavior::BehaviorNode> BuildHyperspaceWarbirdCenter() {
                 .End()
             .End()
         .End();
+
+  #endif
   // clang-format on
 
   return builder.Build();

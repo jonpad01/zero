@@ -7,32 +7,53 @@
 namespace zero {
 namespace behavior {
 
-inline Vector2f CalculateShot(const Vector2f& pShooter, const Vector2f& pTarget, const Vector2f& vShooter,
-                              const Vector2f& vTarget, float sProjectile) {
-  Vector2f totarget = pTarget - pShooter;
-  Vector2f v = vTarget - vShooter;
 
-  float a = v.Dot(v) - sProjectile * sProjectile;
-  float b = 2 * v.Dot(totarget);
-  float c = totarget.Dot(totarget);
-
+struct ShotResult {
+  ShotResult() : hit(false) {}
+  bool hit;
   Vector2f solution;
+};
 
-  float disc = (b * b) - 4 * a * c;
-  float t = -1.0;
+inline ShotResult CalculateShot(Vector2f pShooter, Vector2f pTarget, Vector2f vShooter, Vector2f vTarget,
+                                  float sProjectile) {
+  ShotResult result;
 
-  if (disc >= 0.0) {
-    float t1 = (-b + sqrtf(disc)) / (2 * a);
-    float t2 = (-b - sqrtf(disc)) / (2 * a);
-    if (t1 < t2 && t1 >= 0)
-      t = t1;
-    else
-      t = t2;
+  Vector2f totarget = pTarget - pShooter;  // directional vector pointing to target from shooter
+  Vector2f v = vTarget - vShooter;         // relative velocity
+
+  // dot product
+  double a = double(v.Dot(v)) - double(sProjectile * sProjectile);
+  double b = 2.0 * double(v.Dot(totarget));
+  double c = double(totarget.Dot(totarget));
+
+  double disc = (b * b) - 4.0 * a * c;  // quadratic formula for the discriminant
+  double t = 0.0;                       // time when the bullet intercepts the target
+
+  // discriminant can't be negative, the target is probably moving away from the shooter at a
+  // faster velocity than the bullet
+  if (disc <= 0.0 || a == 0.0) {
+    return result;
   }
 
-  solution = pTarget + (v * t);
+  double t1 = (-b - std::sqrt(disc)) / (2.0 * a);
+  double t2 = (-b + std::sqrt(disc)) / (2.0 * a);
 
-  return solution;
+  if (t1 >= 0.0 && t2 >= 0.0) {
+    t = std::min(t1, t2);
+  } else if (t1 >= 0.0) {
+    t = t1;
+  } else if (t2 >= 0.0) {
+    t = t2;
+  } else {  // time can't be negative
+    return result;
+  }
+
+  Vector2f solution = pTarget + (v * float(t));
+
+  result.solution = solution;
+  result.hit = true;
+
+  return result;
 }
 
 struct ShotVelocityQueryNode : public BehaviorNode {
@@ -103,16 +124,13 @@ struct AimAtPlayerNode : public BehaviorNode {
     float weapon_speed = ctx.bot->game->connection.settings.ShipSettings[self->ship].BulletSpeed / 16.0f / 10.0f;
 
     Player* target = opt_target.value();
-    Vector2f aimshot = CalculateShot(self->position, target->position, self->velocity, target->velocity, weapon_speed);
-    
+    ShotResult aimResult =
+        CalculateShot(self->position, target->position, self->velocity, target->velocity, weapon_speed);
 
-    // Set the aimshot directly to the player position if the calculated position was way off.
-    if (aimshot.DistanceSq(target->position) > 20.0f * 20.0f) {
-      aimshot = target->position;
+    if (!aimResult.hit) {
+      aimResult.solution = target->position;
     }
-
-    ctx.blackboard.Set(position_key, aimshot);
-
+    ctx.blackboard.Set(position_key, aimResult.solution);
     return ExecuteResult::Success;
   }
 
@@ -134,20 +152,46 @@ struct AimAtPositionNode : public BehaviorNode {
     float weapon_speed = ctx.bot->game->connection.settings.ShipSettings[self->ship].BulletSpeed / 16.0f / 10.0f;
 
     Vector2f target = opt_target.value();
-    Vector2f aimshot = CalculateShot(self->position, target, self->velocity, Vector2f(0.0f, 0.0f), weapon_speed);
+    ShotResult aimResult = CalculateShot(self->position, target, self->velocity, Vector2f(0.0f, 0.0f), weapon_speed);
 
-    // Set the aimshot directly to the player position if the calculated position was way off.
-    if (aimshot.DistanceSq(target) > 20.0f * 20.0f) {
-      aimshot = target;
+    if (!aimResult.hit) {
+      aimResult.solution = target;
     }
 
-    ctx.blackboard.Set(position_key, aimshot);
+    ctx.blackboard.Set(position_key, aimResult.solution);
 
     return ExecuteResult::Success;
   }
 
   const char* target_position_key;
   const char* position_key;
+};
+
+struct CalculateShotSuccessQueryNode : public BehaviorNode {
+  CalculateShotSuccessQueryNode(const char* target_player_key) : target_player_key(target_player_key) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override {
+    auto self = ctx.bot->game->player_manager.GetSelf();
+    if (!self) return ExecuteResult::Failure;
+
+    auto opt_target = ctx.blackboard.Value<Player*>(target_player_key);
+    if (!opt_target.has_value()) return ExecuteResult::Failure;
+
+    float weapon_speed = ctx.bot->game->connection.settings.ShipSettings[self->ship].BulletSpeed / 16.0f / 10.0f;
+
+    Player* target = opt_target.value();
+    ShotResult aimResult =
+        CalculateShot(self->position, target->position, self->velocity, target->velocity, weapon_speed);
+
+    if (!aimResult.hit) {
+      return ExecuteResult::Failure;
+    }
+
+    return ExecuteResult::Success;
+  }
+  
+  
+  const char* target_player_key;
 };
 
 }  // namespace behavior
