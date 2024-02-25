@@ -33,6 +33,9 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
   uint8_t ship = game.player_manager.GetSelf()->ship;
   float radius = game.connection.settings.ShipSettings[ship].GetRadius();
 
+  static u32 last_print = 0;
+  static behavior::TreePrinter tree_printer;
+
   // float comparisons are ok here because they are always the same values
   if (this->radius != radius || first_run) {
       this->radius = radius;
@@ -63,12 +66,28 @@ void BotController::Update(float dt, Game& game, InputState& input, behavior::Ex
 
   steering.Reset();
 
+  bool should_print = TICK_GT(GetCurrentTick(), MAKE_TICK(last_print + 50));
+
    if (root) {
+    
+    // bool should_print = false;
+
+    if (should_print) {
+      tree_printer.render_brackets = false;
+      behavior::gDebugTreePrinter = &tree_printer;
+      last_print = GetCurrentTick();
+    }
     root->Execute(ctx);
    }
 
   if (tree) {
     tree->Execute(ctx);
+    if (should_print) {
+      
+      behavior::gDebugTreePrinter = nullptr;
+      tree_printer.Render(stdout);
+      tree_printer.Reset();
+    }
   }
 
   actuator.Update(game, input, steering.force, steering.rotation);

@@ -2,8 +2,10 @@
 
 #include <zero/behavior/Blackboard.h>
 
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 namespace zero {
@@ -11,6 +13,33 @@ namespace zero {
 struct ZeroBot;
 
 namespace behavior {
+
+struct TreePrinter {
+  int depth = 0;
+  std::string output = "\n";
+  bool render_brackets = false;
+
+  void Print(std::string_view str) {
+    int depth_size = depth * 2;
+
+    for (int i = 0; i < depth_size; ++i) {
+      output.push_back(' ');
+    }
+
+    output += str;
+    output += '\n';
+  }
+
+  void Reset() {
+    depth = 0;
+    output.clear();
+    output += '\n';
+  }
+
+  void Render(FILE* f);
+};
+extern TreePrinter* gDebugTreePrinter;
+
 
 enum class ExecuteResult { Success, Failure, Running };
 
@@ -103,6 +132,20 @@ class InvertNode : public BehaviorNode {
  protected:
   std::unique_ptr<BehaviorNode> child_;
 };
+
+#if 0
+class TreePrintNode : public BehaviorNode {
+public:
+  TreePrintNode() : child_(nullptr) {}
+  TreePrintNode(std::unique_ptr<BehaviorNode> child) : child_(std::move(child)) {}
+
+  ExecuteResult Execute(ExecuteContext& ctx) override;
+
+  void Child(std::unique_ptr<BehaviorNode> child) { child_ = std::move(child); }
+
+  std::unique_ptr<BehaviorNode> child_;
+};
+#endif
 
 }  // namespace behavior
 }  // namespace zero
