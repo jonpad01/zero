@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <zero/ZeroBot.h>
 #include <zero/game/Buffer.h>
 #include <zero/game/Clock.h>
@@ -42,9 +43,9 @@ ServerInfo kServers[] = {
     {"SSCU Extreme Games", "208.118.63.35", 7900, Zone::ExtremeGames},
 };
 
-constexpr size_t kServerIndex = 0;
-const char* kLoginName = "ZeroBot";
-const char* kLoginPassword = "none";
+constexpr size_t kServerIndex = 2;
+const char* kLoginName = "";
+const char* kLoginPassword = "";
 
 const char* kServerName = kServers[kServerIndex].name;
 
@@ -52,7 +53,14 @@ static_assert(kServerIndex < ZERO_ARRAY_SIZE(kServers), "Bad server index");
 
 }  // namespace zero
 
-int main(void) {
+int main(int argc, char* argv[]) {
+  if (argc < 3) {
+    std::cout << "Enter Username and Password as arguments.";
+    return 1;
+  }
+
+  srand((unsigned)time(0));
+
 #ifdef _WIN32
   SetConsoleCtrlHandler(ConsoleCloserHandler, TRUE);
 #endif
@@ -60,12 +68,16 @@ int main(void) {
   zero::ZeroBot bot;
   g_Bot = &bot;
 
-  if (!bot.Initialize(zero::kLoginName, zero::kLoginPassword)) {
+  if (!bot.Initialize(argv[1], argv[2])) {
     return 1;
   }
 
-  bot.JoinZone(zero::kServers[zero::kServerIndex]);
-  bot.Run();
+  // if run exits reconect
+  while (true) {
+    bot.JoinZone(zero::kServers[zero::kServerIndex]);
+    bot.Run();
+    Sleep(5000);
+  }
 
   return 0;
 }
