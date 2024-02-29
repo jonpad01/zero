@@ -69,6 +69,11 @@ bool ZeroBot::Initialize(const char* name, const char* password) {
 
   g_LogPrintLevel = LogLevel::Info;
 
+#if CREATE_RENDER_WINDOW
+  g_Settings.vsync = true;  // limits update rate
+#endif
+  
+
   return true;
 }
 
@@ -179,9 +184,12 @@ void ZeroBot::Run() {
 
       Vector2f half_extents(radius, radius);
       game->line_renderer.PushRect(player->position - half_extents, player->position + half_extents, Vector3f(0.0f, 1.0f, 0.0f));
+      game->line_renderer.Render(game->camera);
     }
-    game->line_renderer.Render(game->camera);
+    
 #endif
+
+    
 
     if (game->render_enabled) {
       debug_renderer.Present();

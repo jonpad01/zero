@@ -6,6 +6,8 @@
 
 #include <optional>
 
+#define RENDER_AIM 1 
+
 namespace zero {
 namespace behavior {
 
@@ -14,25 +16,23 @@ inline std::optional<Vector2f> CalculateShot(const Vector2f& pShooter, const Vec
   Vector2f totarget = pTarget - pShooter;
   Vector2f v = vTarget - vShooter;
 
-  float a = v.Dot(v) - sProjectile * sProjectile;
-  float b = 2 * v.Dot(totarget);
+  float a = v.Dot(v) - (sProjectile * sProjectile);
+  float b = 2.0f * v.Dot(totarget);
   float c = totarget.Dot(totarget);
 
   Vector2f solution;
 
-  float disc = (b * b) - 4 * a * c;
-  float t = -1.0;
+  float disc = (b * b) - 4.0f * a * c;
+  float t = 0.0f;
 
-  if (disc >= 0.0) {
-    float t1 = (-b + sqrtf(disc)) / (2 * a);
-    float t2 = (-b - sqrtf(disc)) / (2 * a);
-    if (t1 < t2 && t1 >= 0)
-      t = t1;
-    else
-      t = t2;
-  } else {
-    return std::nullopt;
-  }
+  if (disc <= 0.0 || a == 0.0f) return std::nullopt;
+
+  float t1 = (-b + sqrtf(disc)) / (2.0f * a);
+  float t2 = (-b - sqrtf(disc)) / (2.0f * a);
+
+  t = std::min(t1, t2);
+  if (t < 0.0f) t = std::max(t1, t2);   
+  if (t < 0.0f) return std::nullopt;
 
   solution = pTarget + (v * t);
 
@@ -117,7 +117,8 @@ struct AimNode : public BehaviorNode {
     Vector2f horizontal_vel = target->velocity - direction * amount;
 
     std::optional<Vector2f> calculated_shot =
-        CalculateShot(self->position, target->position, self->velocity, horizontal_vel, weapon_speed);
+      //  CalculateShot(self->position, target->position, self->velocity, horizontal_vel, weapon_speed);
+    CalculateShot(self->position, target->position, self->velocity, target->velocity, weapon_speed);
 
     // Default to target's position if the calculated shot fails.
     Vector2f aimshot = target->position;
@@ -127,9 +128,18 @@ struct AimNode : public BehaviorNode {
 
       // Set the aimshot directly to the player position if it is too far away.
       if (aimshot.DistanceSq(target->position) > 20.0f * 20.0f) {
-        aimshot = target->position;
+       // aimshot = target->position;
       }
     }
+
+#if RENDER_AIM
+    float radius = ctx.bot->game->connection.settings.ShipSettings[target->ship].GetRadius();
+
+    Vector2f half_extents(radius, radius);
+    ctx.bot->game->line_renderer.PushRect(aimshot - half_extents, aimshot + half_extents,
+                                 Vector3f(0.0f, 1.0f, 0.0f));
+    ctx.bot->game->line_renderer.Render(ctx.bot->game->camera);
+#endif  // RENDER_AIM
 
     ctx.blackboard.Set(position_key, aimshot);
 

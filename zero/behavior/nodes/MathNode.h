@@ -6,6 +6,8 @@
 
 #include <random>
 
+#define RENDER_RAY 1
+
 namespace zero {
 namespace behavior {
 
@@ -322,18 +324,37 @@ struct RayNode : public BehaviorNode {
 
 struct RayRectangleInterceptNode : public BehaviorNode {
   RayRectangleInterceptNode(const char* ray_key, const char* rect_key) : ray_key(ray_key), rect_key(rect_key) {}
+  RayRectangleInterceptNode(const char* rect_key) : ray_key(nullptr), rect_key(rect_key) {}
 
   ExecuteResult Execute(ExecuteContext& ctx) override {
-    auto opt_ray = ctx.blackboard.Value<Ray>(ray_key);
-    if (!opt_ray.has_value()) return ExecuteResult::Failure;
+
+    Ray ray(ctx.bot->game->player_manager.GetSelf()->position, ctx.bot->game->player_manager.GetSelf()->GetHeading());
 
     auto opt_rect = ctx.blackboard.Value<Rectangle>(rect_key);
     if (!opt_rect.has_value()) return ExecuteResult::Failure;
+    
+    if (ray_key) {
+      auto opt_ray = ctx.blackboard.Value<Ray>(ray_key);
+      if (!opt_ray.has_value()) return ExecuteResult::Failure;
 
-    Ray& ray = opt_ray.value();
+      ray = opt_ray.value();
+    }
+
     Rectangle& rect = opt_rect.value();
 
     bool intersects = RayBoxIntersect(ray, rect, nullptr, nullptr);
+
+    #if RENDER_RAY
+
+    float distance = ray.origin.Distance(rect.GetCenter());
+    Vector2f ray_extent = ray.origin + ray.direction * distance;
+ 
+
+    ctx.bot->game->line_renderer.PushLine(ray.origin, Vector3f(1.0f, 0.0f, 0.0f), ray_extent,
+                                          Vector3f(1.0f, 0.0f, 0.0f));
+    ctx.bot->game->line_renderer.Render(ctx.bot->game->camera);
+
+    #endif
 
     return intersects ? ExecuteResult::Success : ExecuteResult::Failure;
   }
