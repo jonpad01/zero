@@ -4,7 +4,7 @@
 
 namespace zero {
 
-    const float FREE_PLAY = 0.85f;
+    const float FREE_PLAY = 0.95f;
 
 // Converts a steering force into actual key presses
 struct Actuator {
