@@ -6,7 +6,7 @@
 
 #include <optional>
 
-#define RENDER_AIM 1 
+#define RENDER_AIM 0
 
 namespace zero {
 namespace behavior {

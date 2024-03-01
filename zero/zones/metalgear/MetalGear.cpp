@@ -14,7 +14,8 @@ namespace zero {
 namespace mg {
 
 struct MetalGearController : ZoneController, public EventHandler<PlayerDeathEvent> {
-  bool IsZone(Zone zone) override { return zone == Zone::MetalGear || zone == Zone::Local; }
+  bool IsZone(Zone zone) override { return zone == Zone::MetalGear; }
+  //bool IsZone(Zone zone) override { return zone == Zone::MetalGear || zone == Zone::Local; }
 
   void CreateBehaviors(const char* arena_name) override;
 

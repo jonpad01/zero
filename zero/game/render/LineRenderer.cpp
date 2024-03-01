@@ -70,6 +70,11 @@ void LineRenderer::PushLine(const Vector2f& start, const Vector3f& start_color, 
   lines.emplace_back(LineVertex(start, start_color), LineVertex(end, end_color));
 }
 
+void LineRenderer::PushLine(const LineSegment& line, const Vector3f& color) {
+  PushLine(line.points[0], color, line.points[1], color);
+}
+
+
 void LineRenderer::PushCross(const Vector2f& start, const Vector3f& color, float size) {
   float radius = size * 0.5f;
 
@@ -96,6 +101,11 @@ void LineRenderer::PushRect(const Vector2f& start, const Vector2f& end, const Ve
   PushLine(bottom_right, color, top_right, color);
   PushLine(bottom_right, color, bottom_left, color);
 }
+
+void LineRenderer::PushRect(const Rectangle& rect, const Vector3f& color) {
+  PushRect(rect.min, rect.max, color);
+}
+
 
 void LineRenderer::Render(Camera& camera) {
   if (lines.empty()) return;
@@ -137,4 +147,4 @@ void LineRenderer::Render(Camera& camera) {
   lines.clear();
 }
 
-}  // namespace elm
+}  // namespace zero

@@ -172,7 +172,14 @@ void ZeroBot::Run() {
     // Line renderer examples.
     // Push a line using the ui camera.
     game->line_renderer.PushLine(Vector2f(0, 0), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(512, 512), Vector3f(1.0f, 0.0f, 0.0f));
-    game->line_renderer.Render(game->ui_camera);
+    game->line_renderer.Render(game->camera);
+
+    auto self = game->player_manager.GetSelf();
+
+    Vector2f from = self->position;
+    Vector2f to = self->position + self->GetHeading() * 3.0f;
+
+    game->line_renderer.PushLine(from, Vector3f(1.0f, 0.0f, 1.0f), to, Vector3f(1.0f, 0.0f, 1.0f));
 
     // Loop over players and render a bounding box around them using world camera.
     for (size_t i = 0; i < game->player_manager.player_count; ++i) {

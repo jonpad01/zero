@@ -6,7 +6,7 @@
 
 #include <random>
 
-#define RENDER_RAY 1
+#define RENDER_RAY 0
 
 namespace zero {
 namespace behavior {
